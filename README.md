@@ -75,9 +75,7 @@ We welcome contributions from team members and the community! Here's how you can
    ```
 5. **Create a pull request** with a clear description of your changes.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+This project is licensed under the BSD 3-Clause License. See the [LICENSE](WPILib-License.md) file for more details.
 
 ---
 
