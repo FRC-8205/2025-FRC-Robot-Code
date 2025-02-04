@@ -111,6 +111,10 @@ public class TunerConstants {
 
     private static final int kPigeonId = 9;
 
+    public static int getPigeonID() {
+        return kPigeonId;
+    }
+
     // These are only used for simulation
     private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
     private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
@@ -150,6 +154,15 @@ public class TunerConstants {
     // Front Left
     private static final int kFrontLeftDriveMotorId = 1;
     private static final int kFrontLeftSteerMotorId = 0;
+
+    public static int getFrontLeftDriveMotorID() {
+        return kFrontLeftDriveMotorId;
+    }
+
+    public static int getFrontLeftSteerMotorID() {
+        return kFrontLeftSteerMotorId;
+    }
+
     private static final int kFrontLeftEncoderId = 3;
     private static final Angle kFrontLeftEncoderOffset = Rotations.of(0.30419921875);
     private static final boolean kFrontLeftSteerMotorInverted = true;
@@ -157,6 +170,11 @@ public class TunerConstants {
 
     private static final Distance kFrontLeftXPos = Inches.of(12.5);
     private static final Distance kFrontLeftYPos = Inches.of(12.5);
+
+    //getters for the front left module
+    public static int getFrontLeftEncoder(){
+        return kFrontLeftEncoderId;
+    }
 
     // Front Right
     private static final int kFrontRightDriveMotorId = 3;
@@ -169,6 +187,11 @@ public class TunerConstants {
     private static final Distance kFrontRightXPos = Inches.of(12.5);
     private static final Distance kFrontRightYPos = Inches.of(-12.5);
 
+    //getters for the front right module
+    public static int getFrontRightEncoder(){
+        return kFrontRightEncoderId;
+    }
+
     // Back Left
     private static final int kBackLeftDriveMotorId = 7;
     private static final int kBackLeftSteerMotorId = 6;
@@ -180,6 +203,11 @@ public class TunerConstants {
     private static final Distance kBackLeftXPos = Inches.of(-12.5);
     private static final Distance kBackLeftYPos = Inches.of(12.5);
 
+    //getters for the back left module
+    public static int getBackLeftEncoder(){
+        return kBackLeftEncoderId;
+    }
+
     // Back Right
     private static final int kBackRightDriveMotorId = 5;
     private static final int kBackRightSteerMotorId = 4;
@@ -190,6 +218,11 @@ public class TunerConstants {
 
     private static final Distance kBackRightXPos = Inches.of(-12.5);
     private static final Distance kBackRightYPos = Inches.of(-12.5);
+
+    //getters for the back right module
+    public static int getBackRightEncoder(){
+        return kBackRightEncoderId;
+    }
 
 
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
