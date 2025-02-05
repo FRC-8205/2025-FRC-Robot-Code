@@ -82,18 +82,18 @@ public class SimulatedDrivetrain extends CommandSwerveDrivetrain {
 
     // define each of the motors and encoders in the drivetrain
     private String CANbusName = TunerConstants.getCANbusName();
-    private DeviceConstructor<CommonTalon> m_driveMotorConstructor = (id, name) -> {
+    private DeviceConstructor<CoreTalonFX> m_driveMotorConstructor = (id, name) -> {
         return new CoreTalonFX(id, name);
     };
-    private DeviceConstructor<CommonTalon> m_steerMotorConstructor = (id, name) -> {
+    private DeviceConstructor<CoreTalonFX> m_steerMotorConstructor = (id, name) -> {
         return new CoreTalonFX(id, name);
     };
-    private DeviceConstructor<ParentDevice> m_encoderConstructor = (id, name) -> {
+    private DeviceConstructor<CoreCANcoder> m_encoderConstructor = (id, name) -> {
         return new CoreCANcoder(id);
     };
 
     // define each module
-    private SwerveModule<CommonTalon, CommonTalon, ParentDevice> m_frontLeftModule = new SwerveModule(m_driveMotorConstructor, m_steerMotorConstructor, m_encoderConstructor, TunerConstants.FrontLeft, 0, 0);
+    private SwerveModule<CoreTalonFX, CoreTalonFX, CoreCANcoder> m_frontLeftModule = new SwerveModule<>(m_driveMotorConstructor, m_steerMotorConstructor, m_encoderConstructor, TunerConstants.FrontLeft, 0, 0);
     @Override
     public void simulationPeriodic() {
         // m_simDrivetrain.update(0.02, TunerConstants.getBatteryVoltage(), )
