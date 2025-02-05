@@ -28,6 +28,10 @@ import com.ctre.phoenix6.hardware.core.CoreTalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SimSwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.DeviceConstructor;
+import com.ctre.phoenix6.swerve.SwerveModule;
+import com.ctre.phoenix6.hardware.traits.CommonTalon;
+import com.ctre.phoenix6.hardware.ParentDevice;
 
 import com.ctre.phoenix6.sim.CANcoderSimState;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
@@ -74,10 +78,24 @@ public class SimulatedDrivetrain extends CommandSwerveDrivetrain {
     };
 
     // define the swerve drivetrain
-    private SimSwerveDrivetrain m_simDrivetrain = new SimSwerveDrivetrain(m_wheelPositions, gyroscopeSim, TunerConstants.FrontLeft);
+    private SimSwerveDrivetrain m_simDrivetrain = new SimSwerveDrivetrain(m_wheelPositions, gyroscopeSim, TunerConstants.BackLeft, TunerConstants.BackRight, TunerConstants.FrontLeft, TunerConstants.FrontRight);
 
+    // define each of the motors and encoders in the drivetrain
+    private String CANbusName = TunerConstants.getCANbusName();
+    private DeviceConstructor<CommonTalon> m_driveMotorConstructor = (id, name) -> {
+        return new CoreTalonFX(id, name);
+    };
+    private DeviceConstructor<CommonTalon> m_steerMotorConstructor = (id, name) -> {
+        return new CoreTalonFX(id, name);
+    };
+    private DeviceConstructor<ParentDevice> m_encoderConstructor = (id, name) -> {
+        return new CoreCANcoder(id);
+    };
+
+    // define each module
+    private SwerveModule<CommonTalon, CommonTalon, ParentDevice> m_frontLeftModule = new SwerveModule(m_driveMotorConstructor, m_steerMotorConstructor, m_encoderConstructor, TunerConstants.FrontLeft, 0, 0);
     @Override
     public void simulationPeriodic() {
-        m_simDrivetrain.update(0.02, TunerConstants.getBatteryVoltage(),  )
+        // m_simDrivetrain.update(0.02, TunerConstants.getBatteryVoltage(), )
     }
 }

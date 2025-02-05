@@ -101,6 +101,10 @@ public class TunerConstants {
     // All swerve devices must share the same CAN bus
     public static final CANBus kCANBus = new CANBus("", "./logs/example.hoot");
 
+    public static String getCANbusName() {
+        return kCANBus.getName();
+    }
+
     // Theoretical free speed (m/s) at 12 V applied output;
     // This needs to be tuned to your individual robot
     public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(3.92);
@@ -162,14 +166,6 @@ public class TunerConstants {
     private static final int kFrontLeftDriveMotorId = 1;
     private static final int kFrontLeftSteerMotorId = 0;
 
-    public static int getFrontLeftDriveMotorID() {
-        return kFrontLeftDriveMotorId;
-    }
-
-    public static int getFrontLeftSteerMotorID() {
-        return kFrontLeftSteerMotorId;
-    }
-
     private static final int kFrontLeftEncoderId = 3;
     private static final Angle kFrontLeftEncoderOffset = Rotations.of(0.30419921875);
     private static final boolean kFrontLeftSteerMotorInverted = true;
@@ -190,18 +186,18 @@ public class TunerConstants {
     public static double getFrontLeftYPos() {
         return kFrontLeftYPos.magnitude();
     }
+    
+    public static int getFrontLeftDriveMotorID() {
+        return kFrontLeftDriveMotorId;
+    }
+
+    public static int getFrontLeftSteerMotorID() {
+        return kFrontLeftSteerMotorId;
+    }
 
     // Front Right
     private static final int kFrontRightDriveMotorId = 3;
     private static final int kFrontRightSteerMotorId = 2;
-
-    public static int getFrontRightDriveMotorID() {
-        return kFrontRightDriveMotorId;
-    }
-
-    public static int getFrontRightSteerMotorID() {
-        return kFrontRightSteerMotorId;
-    }
 
     private static final int kFrontRightEncoderId = 4;
     private static final Angle kFrontRightEncoderOffset = Rotations.of(-0.2529296875);
@@ -222,6 +218,14 @@ public class TunerConstants {
 
     public static double getFrontRightYPos() {
         return kFrontRightYPos.magnitude();
+    }
+    
+    public static int getFrontRightDriveMotorID() {
+        return kFrontRightDriveMotorId;
+    }
+
+    public static int getFrontRightSteerMotorID() {
+        return kFrontRightSteerMotorId;
     }
 
     // Back Left
@@ -249,17 +253,17 @@ public class TunerConstants {
         return kBackLeftYPos.magnitude();
     }
 
+    public static int getBackLeftSteerMotorID() {
+        return kBackLeftSteerMotorId;
+    }
+
+    public static int getBackLeftDriveMotorID() {
+        return kBackLeftDriveMotorId;
+    }
+
     // Back Right
     private static final int kBackRightDriveMotorId = 5;
     private static final int kBackRightSteerMotorId = 4;
-
-    public static int getBackRightDriveMotorID() {
-        return kBackRightDriveMotorId;
-    }
-
-    public static int getBackRightSteerMotorID() {
-        return kBackRightSteerMotorId;
-    }
 
     private static final int kBackRightEncoderId = 1;
     private static final Angle kBackRightEncoderOffset = Rotations.of(-0.279541015625);
@@ -280,6 +284,14 @@ public class TunerConstants {
 
     public static double getBackRightYPos() {
         return kBackRightYPos.magnitude();
+    }
+    
+    public static int getBackRightDriveMotorID() {
+        return kBackRightDriveMotorId;
+    }
+
+    public static int getBackRightSteerMotorID() {
+        return kBackRightSteerMotorId;
     }
 
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
