@@ -75,6 +75,13 @@ public class TunerConstants {
     // This needs to be tuned to your individual robot
     private static final Current kSlipCurrent = Amps.of(120.0);
 
+    // The voltage of the battery (ideal)
+    private static final double kBatteryVoltage = 12.0;
+
+    public static double getBatteryVoltage() {
+        return kBatteryVoltage;
+    }
+
     // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
     // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.
     private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
@@ -171,14 +178,31 @@ public class TunerConstants {
     private static final Distance kFrontLeftXPos = Inches.of(12.5);
     private static final Distance kFrontLeftYPos = Inches.of(12.5);
 
-    //getters for the front left module
+    // getters for the front left module
     public static int getFrontLeftEncoder(){
         return kFrontLeftEncoderId;
+    }
+
+    public static double getFrontLeftXPos() {
+        return kFrontLeftXPos.magnitude();
+    }
+
+    public static double getFrontLeftYPos() {
+        return kFrontLeftYPos.magnitude();
     }
 
     // Front Right
     private static final int kFrontRightDriveMotorId = 3;
     private static final int kFrontRightSteerMotorId = 2;
+
+    public static int getFrontRightDriveMotorID() {
+        return kFrontRightDriveMotorId;
+    }
+
+    public static int getFrontRightSteerMotorID() {
+        return kFrontRightSteerMotorId;
+    }
+
     private static final int kFrontRightEncoderId = 4;
     private static final Angle kFrontRightEncoderOffset = Rotations.of(-0.2529296875);
     private static final boolean kFrontRightSteerMotorInverted = true;
@@ -187,14 +211,23 @@ public class TunerConstants {
     private static final Distance kFrontRightXPos = Inches.of(12.5);
     private static final Distance kFrontRightYPos = Inches.of(-12.5);
 
-    //getters for the front right module
+    // getters for the front right module
     public static int getFrontRightEncoder(){
         return kFrontRightEncoderId;
+    }
+
+    public static double getFrontRightXPos() {
+        return kFrontRightXPos.magnitude();
+    }
+
+    public static double getFrontRightYPos() {
+        return kFrontRightYPos.magnitude();
     }
 
     // Back Left
     private static final int kBackLeftDriveMotorId = 7;
     private static final int kBackLeftSteerMotorId = 6;
+
     private static final int kBackLeftEncoderId = 2;
     private static final Angle kBackLeftEncoderOffset = Rotations.of(0.06298828125);
     private static final boolean kBackLeftSteerMotorInverted = true;
@@ -203,14 +236,31 @@ public class TunerConstants {
     private static final Distance kBackLeftXPos = Inches.of(-12.5);
     private static final Distance kBackLeftYPos = Inches.of(12.5);
 
-    //getters for the back left module
+    // getters for the back left module
     public static int getBackLeftEncoder(){
         return kBackLeftEncoderId;
+    }
+
+    public static double getBackLeftXPos() {
+        return kBackLeftXPos.magnitude();
+    }
+
+    public static double getBackLeftYPos() {
+        return kBackLeftYPos.magnitude();
     }
 
     // Back Right
     private static final int kBackRightDriveMotorId = 5;
     private static final int kBackRightSteerMotorId = 4;
+
+    public static int getBackRightDriveMotorID() {
+        return kBackRightDriveMotorId;
+    }
+
+    public static int getBackRightSteerMotorID() {
+        return kBackRightSteerMotorId;
+    }
+
     private static final int kBackRightEncoderId = 1;
     private static final Angle kBackRightEncoderOffset = Rotations.of(-0.279541015625);
     private static final boolean kBackRightSteerMotorInverted = true;
@@ -219,11 +269,18 @@ public class TunerConstants {
     private static final Distance kBackRightXPos = Inches.of(-12.5);
     private static final Distance kBackRightYPos = Inches.of(-12.5);
 
-    //getters for the back right module
+    // getters for the back right module
     public static int getBackRightEncoder(){
         return kBackRightEncoderId;
     }
 
+    public static double getBackRightXPos() {
+        return kBackRightXPos.magnitude();
+    }
+
+    public static double getBackRightYPos() {
+        return kBackRightYPos.magnitude();
+    }
 
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(

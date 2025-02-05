@@ -9,6 +9,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -26,6 +27,7 @@ import com.ctre.phoenix6.hardware.core.CorePigeon2;
 import com.ctre.phoenix6.hardware.core.CoreTalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import com.ctre.phoenix6.swerve.SimSwerveDrivetrain;
 
 import com.ctre.phoenix6.sim.CANcoderSimState;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
@@ -63,7 +65,19 @@ public class SimulatedDrivetrain extends CommandSwerveDrivetrain {
     // define gyroscope simulation state
     private Pigeon2SimState gyroscopeSim = new Pigeon2SimState(gyroscope);
 
-    // define each of the swere motors
-    private CoreTalonFX m_frontLeftDriveMotor = new CoreTalonFX(TunerConstants.getFrontLeftDriveMotorID());
-    private CoreTalonFX m_frontLeftSteerMotor = new CoreTalonFX(TunerConstants.getFrontLeftSteerMotorID());
+    // define wheel locations
+    Translation2d[] m_wheelPositions = {
+        new Translation2d(TunerConstants.getBackLeftXPos(), TunerConstants.getBackLeftYPos()),
+        new Translation2d(TunerConstants.getBackRightXPos(), TunerConstants.getBackRightYPos()),
+        new Translation2d(TunerConstants.getFrontLeftXPos(), TunerConstants.getFrontLeftYPos()),
+        new Translation2d(TunerConstants.getFrontRightXPos(), TunerConstants.getFrontRightYPos())
+    };
+
+    // define the swerve drivetrain
+    private SimSwerveDrivetrain m_simDrivetrain = new SimSwerveDrivetrain(m_wheelPositions, gyroscopeSim, TunerConstants.FrontLeft);
+
+    @Override
+    public void simulationPeriodic() {
+        m_simDrivetrain.update(0.02, TunerConstants.getBatteryVoltage(),  )
+    }
 }
