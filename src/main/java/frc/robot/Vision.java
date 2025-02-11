@@ -20,45 +20,82 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-
 public class Vision {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator photonEstimator;
     private Matrix<N3, N1> curStdDevs;
 
-    // TODO: add simulations
+    // Simulation
+    private PhotonCameraSim cameraSim;
+    private VisionSystemSim visionSim;
 
     public Vision() {
         camera = new PhotonCamera(kCameraName);
 
-        photonEstimator = new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam);
+        photonEstimator =
+                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam);
         photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
-        // simulation stuff
+        // ----- Simulation
+        if (Robot.isSimulation()) {
+            // Create the vision system simulation which handles cameras and targets on the field.
+            visionSim = new VisionSystemSim("main");
+            // Add all the AprilTags inside the tag layout as visible targets to this simulated field.
+            visionSim.addAprilTags(kTagLayout);
+            // Create simulated camera properties. These can be set to mimic your actual camera.
+            var cameraProp = new SimCameraProperties();
+            cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
+            cameraProp.setCalibError(0.35, 0.10);
+            cameraProp.setFPS(15);
+            cameraProp.setAvgLatencyMs(50);
+            cameraProp.setLatencyStdDevMs(15);
+            // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible
+            // targets.
+            cameraSim = new PhotonCameraSim(camera, cameraProp);
+            // Add the simulated camera to view the targets on this simulated field.
+            visionSim.addCamera(cameraSim, kRobotToCam);
+
+            cameraSim.enableDrawWireframe(true);
+        }
     }
 
+    /**
+     * The latest estimated robot pose on the field from vision data. This may be empty. This should
+     * only be called once per loop.
+     *
+     * <p>Also includes updates for the standard deviations, which can (optionally) be retrieved with
+     * {@link getEstimationStdDevs}
+     *
+     * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
+     *     used for estimation.
+     */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         for (var change : camera.getAllUnreadResults()) {
             visionEst = photonEstimator.update(change);
             updateEstimationStdDevs(visionEst, change.getTargets());
 
-            // simulation stuff
-
-            // if (Robot.isSimulation()) {
-            //     visionEst.ifPresentOrElse(
-            //             est ->
-            //                     getSimDebugField()
-            //                             .getObject("VisionEstimation")
-            //                             .setPose(est.estimatedPose.toPose2d()),
-            //             () -> {
-            //                 getSimDebugField().getObject("VisionEstimation").setPoses();
-            //             });
-            // }
+            if (Robot.isSimulation()) {
+                visionEst.ifPresentOrElse(
+                        est ->
+                                getSimDebugField()
+                                        .getObject("VisionEstimation")
+                                        .setPose(est.estimatedPose.toPose2d()),
+                        () -> {
+                            getSimDebugField().getObject("VisionEstimation").setPoses();
+                        });
+            }
         }
         return visionEst;
     }
 
+    /**
+     * Calculates new standard deviations This algorithm is a heuristic that creates dynamic standard
+     * deviations based on number of tags, estimation strategy, and distance from the tags.
+     *
+     * @param estimatedPose The estimated pose to guess standard deviations for.
+     * @param targets All targets in this camera frame
+     */
     private void updateEstimationStdDevs(
             Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
         if (estimatedPose.isEmpty()) {
@@ -101,7 +138,30 @@ public class Vision {
         }
     }
 
+    /**
+     * Returns the latest standard deviations of the estimated pose from {@link
+     * #getEstimatedGlobalPose()}, for use with {@link
+     * edu.wpi.first.math.estimator.SwerveDrivePoseEstimator SwerveDrivePoseEstimator}. This should
+     * only be used when there are targets visible.
+     */
     public Matrix<N3, N1> getEstimationStdDevs() {
         return curStdDevs;
+    }
+
+    // ----- Simulation
+
+    public void simulationPeriodic(Pose2d robotSimPose) {
+        visionSim.update(robotSimPose);
+    }
+
+    /** Reset pose history of the robot in the vision system simulation. */
+    public void resetSimPose(Pose2d pose) {
+        if (Robot.isSimulation()) visionSim.resetRobotPose(pose);
+    }
+
+    /** A Field2d for visualizing our robot and objects on the field. */
+    public Field2d getSimDebugField() {
+        if (!Robot.isSimulation()) return null;
+        return visionSim.getDebugField();
     }
 }

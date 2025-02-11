@@ -4,10 +4,16 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.Utils;
+// import com.ctre.phoenix6.Utils;
 
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+// import edu.wpi.first.math.kinematics.SwerveModuleState;
+// import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
+// import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -16,7 +22,6 @@ public class Robot extends TimedRobot {
 
   private final RobotContainer m_robotContainer;
 
-  private final boolean kUseLimelight = false;
 
   public Robot() {
     m_robotContainer = new RobotContainer();
@@ -26,25 +31,16 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    /*
-     * This example of adding Limelight is very simple and may not be sufficient for on-field use.
-     * Users typically need to provide a standard deviation that scales with the distance to target
-     * and changes with number of tags available.
-     *
-     * This example is sufficient to show that vision integration is possible, though exact implementation
-     * of how to use vision should be tuned per-robot and to the team's specification.
-     */
-    if (kUseLimelight) {
-      var driveState = m_robotContainer.drivetrain.getState();
-      double headingDeg = driveState.Pose.getRotation().getDegrees();
-      double omegaRps = Units.radiansToRotations(driveState.Speeds.omegaRadiansPerSecond);
-
-      LimelightHelpers.SetRobotOrientation("limelight", headingDeg, 0, 0, 0, 0, 0);
-      var llMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-      if (llMeasurement != null && llMeasurement.tagCount > 0 && omegaRps < 2.0) {
-        m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement.pose, Utils.fpgaToCurrentTime(llMeasurement.timestampSeconds));
-      }
-    }
+    // Correct pose estimate with vision measurements
+    var visionEst = m_robotContainer.vision.getEstimatedGlobalPose();
+    visionEst.ifPresent(
+      est -> {
+        // Change our trust in the measurement based on the tags we can see
+        var estStdDevs = m_robotContainer.vision.getEstimationStdDevs();
+    
+        m_robotContainer.drivetrain.addVisionMeasurement(
+        est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
+      });
   }
 
   @Override
@@ -76,6 +72,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    resetPose();
   }
 
   @Override
@@ -96,5 +93,28 @@ public class Robot extends TimedRobot {
   public void testExit() {}
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    // Update drivetrain simulation
+    m_robotContainer.drivetrain.simulationPeriodic();
+
+    // Update camera simulation
+    m_robotContainer.vision.simulationPeriodic(m_robotContainer.drivetrain.getState().Pose);
+    
+    var debugField = m_robotContainer.vision.getSimDebugField();
+    debugField.getObject("EstimatedRobot").setPose(m_robotContainer.drivetrain.getState().Pose);
+    debugField.getObject("EstimatedRobotModules").setPoses(m_robotContainer.drivetrain.getModulePoses());
+    
+    // Using max(0.1, voltage) here isn't a *physically correct* solution,
+    // but it avoids problems with battery voltage measuring 0.
+    RoboRioSim.setVInVoltage(Math.max(0.1, RobotController.getBatteryVoltage()));
+  }
+
+  public void resetPose() {
+    // Example Only - startPose should be derived from some assumption
+    // of where your robot was placed on the field.
+    // The first pose in an autonomous path is often a good choice.
+    var startPose = new Pose2d(1, 1, new Rotation2d());
+    m_robotContainer.drivetrain.resetPose(startPose);
+    m_robotContainer.vision.resetSimPose(startPose);
+  }
 }
