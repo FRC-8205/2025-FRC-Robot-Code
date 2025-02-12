@@ -24,7 +24,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 
 public class TunerConstants {
-    // Constants for the limelight camera setup
+    // Constants for the camera setup
     public static class Vision {
         public static final String kCameraName1 = "Bob";
         public static final String kCameraName2 = "Sharon";
