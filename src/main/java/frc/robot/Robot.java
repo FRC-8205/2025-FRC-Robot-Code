@@ -8,12 +8,14 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 // import edu.wpi.first.math.kinematics.SwerveModuleState;
 // import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 // import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -22,6 +24,7 @@ public class Robot extends TimedRobot {
 
   private final RobotContainer m_robotContainer;
 
+  private double matchTime;
 
   public Robot() {
     m_robotContainer = new RobotContainer();
@@ -41,6 +44,17 @@ public class Robot extends TimedRobot {
         m_robotContainer.drivetrain.addVisionMeasurement(
         est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
       });
+
+    matchTime = getMatchTime();  
+    // Prevent showing -1 when disabled
+    if (matchTime >= 0) {
+        SmartDashboard.putNumber("Match Time", matchTime);
+    } else {
+        SmartDashboard.putNumber("Match Time", 0);
+    }
+
+    SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
+
   }
 
   @Override
@@ -117,4 +131,14 @@ public class Robot extends TimedRobot {
     m_robotContainer.drivetrain.resetPose(startPose);
     m_robotContainer.vision.resetSimPose(startPose);
   }
+
+  public double getMatchTime() {
+    return DriverStation.getMatchTime(); // Returns time remaining in match
+  }
+
+  public double getBatteryVoltage() {
+    return RobotController.getBatteryVoltage(); // Returns voltage (e.g., 12.5V)
+  }
+
+
 }
