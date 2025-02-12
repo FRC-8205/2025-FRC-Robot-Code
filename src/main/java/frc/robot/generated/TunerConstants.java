@@ -26,11 +26,15 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class TunerConstants {
     // Constants for the limelight camera setup
     public static class Vision {
-        public static final String kCameraName = "limelight";
+        public static final String kCameraName1 = "Bob";
+        public static final String kCameraName2 = "Sharon";
+        public static final String kCameraName3 = "Derik";
 
         // TODO: change default values
-        // where the camera is
-        public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
+        // where the cameras are
+        public static final Transform3d kRobotToCam1 = new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
+        public static final Transform3d kRobotToCam2 = new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
+        public static final Transform3d kRobotToCam3 = new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
 
         // apriltag layout
         public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);

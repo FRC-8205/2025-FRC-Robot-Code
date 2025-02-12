@@ -21,20 +21,36 @@ import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Vision {
-    private final PhotonCamera camera;
-    private final PhotonPoseEstimator photonEstimator;
+    private final PhotonCamera camera1;
+    private final PhotonCamera camera2;
+    private final PhotonCamera camera3;
+    private final PhotonPoseEstimator photonEstimator1;
+    private final PhotonPoseEstimator photonEstimator2;
+    private final PhotonPoseEstimator photonEstimator3;
     private Matrix<N3, N1> curStdDevs;
 
     // Simulation
-    private PhotonCameraSim cameraSim;
+    private PhotonCameraSim cameraSim1;
+    private PhotonCameraSim cameraSim2;
+    private PhotonCameraSim cameraSim3;
     private VisionSystemSim visionSim;
 
     public Vision() {
-        camera = new PhotonCamera(kCameraName);
+        camera1 = new PhotonCamera(kCameraName1);
+        camera2 = new PhotonCamera(kCameraName2);
+        camera3 = new PhotonCamera(kCameraName3);
 
-        photonEstimator =
-                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam);
-        photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        photonEstimator1 =
+                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam1);
+        photonEstimator1.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
+        photonEstimator2 =
+                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam2);
+        photonEstimator2.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
+        photonEstimator3 =
+                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam3);
+        photonEstimator3.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
         // ----- Simulation
         if (Robot.isSimulation()) {
@@ -49,13 +65,18 @@ public class Vision {
             cameraProp.setFPS(15);
             cameraProp.setAvgLatencyMs(50);
             cameraProp.setLatencyStdDevMs(15);
-            // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible
-            // targets.
-            cameraSim = new PhotonCameraSim(camera, cameraProp);
-            // Add the simulated camera to view the targets on this simulated field.
-            visionSim.addCamera(cameraSim, kRobotToCam);
+            // Create PhotonCameraSim instances which will update the linked PhotonCamera's values with visible targets.
+            cameraSim1 = new PhotonCameraSim(camera1, cameraProp);
+            cameraSim2 = new PhotonCameraSim(camera2, cameraProp);
+            cameraSim3 = new PhotonCameraSim(camera3, cameraProp);
+            // Add the simulated cameras to view the targets on this simulated field.
+            visionSim.addCamera(cameraSim1, kRobotToCam1);
+            visionSim.addCamera(cameraSim2, kRobotToCam2);
+            visionSim.addCamera(cameraSim3, kRobotToCam3);
 
-            cameraSim.enableDrawWireframe(true);
+            cameraSim1.enableDrawWireframe(true);
+            cameraSim2.enableDrawWireframe(true);
+            cameraSim3.enableDrawWireframe(true);
         }
     }
 
@@ -71,8 +92,38 @@ public class Vision {
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        for (var change : camera.getAllUnreadResults()) {
-            visionEst = photonEstimator.update(change);
+        for (var change : camera1.getAllUnreadResults()) {
+            visionEst = photonEstimator1.update(change);
+            updateEstimationStdDevs(visionEst, change.getTargets());
+
+            if (Robot.isSimulation()) {
+                visionEst.ifPresentOrElse(
+                        est ->
+                                getSimDebugField()
+                                        .getObject("VisionEstimation")
+                                        .setPose(est.estimatedPose.toPose2d()),
+                        () -> {
+                            getSimDebugField().getObject("VisionEstimation").setPoses();
+                        });
+            }
+        }
+        for (var change : camera2.getAllUnreadResults()) {
+            visionEst = photonEstimator2.update(change);
+            updateEstimationStdDevs(visionEst, change.getTargets());
+
+            if (Robot.isSimulation()) {
+                visionEst.ifPresentOrElse(
+                        est ->
+                                getSimDebugField()
+                                        .getObject("VisionEstimation")
+                                        .setPose(est.estimatedPose.toPose2d()),
+                        () -> {
+                            getSimDebugField().getObject("VisionEstimation").setPoses();
+                        });
+            }
+        }
+        for (var change : camera3.getAllUnreadResults()) {
+            visionEst = photonEstimator3.update(change);
             updateEstimationStdDevs(visionEst, change.getTargets());
 
             if (Robot.isSimulation()) {
@@ -110,7 +161,7 @@ public class Vision {
 
             // Precalculation - see how many tags we found, and calculate an average-distance metric
             for (var tgt : targets) {
-                var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
+                var tagPose = photonEstimator1.getFieldTags().getTagPose(tgt.getFiducialId());
                 if (tagPose.isEmpty()) continue;
                 numTags++;
                 avgDist +=
