@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 
+import frc.robot.generated.TunerConstants;
+
 public class Elevator {
     private SparkMax leftMotorController;
     private SparkMax rightMotorController;
@@ -42,6 +44,15 @@ public class Elevator {
         }
     }
 
+    // distance is the distance in inches from the lowest point, not current position
+    public void moveElevatorFromBottom(double distance) {
+        // TODO: figure out which side moves it up and which one moves it down
+        // calculate number of rotations required
+        double rotations = distance / (TunerConstants.getElevatorChainLength() * TunerConstants.getElevatorGearRatio() * TunerConstants.getElevatorRotations());
+
+    }
+
+    // create the widget in elastic
     private void configureElevatorWidget() {
         SmartDashboard.putData("Elevator", new Sendable() {
             @Override
