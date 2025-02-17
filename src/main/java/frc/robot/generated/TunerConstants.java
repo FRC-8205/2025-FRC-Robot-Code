@@ -298,6 +298,20 @@ public class TunerConstants {
         return kBackRightSteerMotorId;
     }
 
+    // motor ids for the elevator
+    // TODO: change to match actual ids
+
+    private static final int kLeftElevatorMotorID = 0;
+    private static final int kRightElevatorMotorID = 1;
+
+    public static int getLeftElevatorMotorID() {
+        return kLeftElevatorMotorID;
+    }
+
+    public static int getRightElevatorMotorID() {
+        return kRightElevatorMotorID;
+    }
+
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(
             kFrontLeftSteerMotorId, kFrontLeftDriveMotorId, kFrontLeftEncoderId, kFrontLeftEncoderOffset,
