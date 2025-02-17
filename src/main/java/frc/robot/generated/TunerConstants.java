@@ -312,6 +312,24 @@ public class TunerConstants {
         return kRightElevatorMotorID;
     }
 
+    // values to find the translational movement of the elevator with one rotation of the motor
+    private static double kElevatorChainLength = 0.25;
+    private static double kElevatorGearRatio = 16;
+    // not sure what this value means
+    private static int kElevatorRotations = 22;
+
+    public static double getElevatorChainLength() {
+        return kElevatorChainLength;
+    }
+
+    public static double getElevatorGearRatio() {
+        return kElevatorGearRatio;
+    }
+
+    public static int getElevatorRotations() {
+        return kElevatorRotations;
+    }
+
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(
             kFrontLeftSteerMotorId, kFrontLeftDriveMotorId, kFrontLeftEncoderId, kFrontLeftEncoderOffset,
