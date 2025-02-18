@@ -1,8 +1,6 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel;
 
@@ -58,7 +56,7 @@ public class Elevator {
 
     public void moveElevatorUp() {
         leftMotorController.set(0.5); // Set motor speed to 50% of full speed
-        rightMotorController.set(0.5); // Set motor speed to 50% of full speed
+        rightMotorController.set(-0.5); // Set motor speed to 50% of full speed
     }
 
     public InstantCommand createMoveCommand() {
@@ -68,6 +66,10 @@ public class Elevator {
     public void stopElevator() {
         leftMotorController.set(0); // Stop motor
         rightMotorController.set(0); // Stop motor
+    }
+
+    public InstantCommand createStopCommand() {
+        return new InstantCommand(() -> stopElevator());
     }
 
     // create the widget in elastic

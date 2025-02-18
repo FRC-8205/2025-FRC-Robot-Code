@@ -95,7 +95,7 @@ public class RobotContainer {
         /* DRIVER BUTTONS */
         /* Elevator Up */
         joystick.x().onTrue(elevator.createMoveCommand());
-        // joystick.a().onTrue(elevator.moveElevatorUp());
+        joystick.x().onFalse(elevator.createStopCommand());
         /* Reset Field-Centric Heading */
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
     }
