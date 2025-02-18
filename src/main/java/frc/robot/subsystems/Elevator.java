@@ -1,29 +1,34 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import frc.robot.generated.TunerConstants;
 
 public class Elevator {
+
+    // devices
     private SparkMax leftMotorController;
     private SparkMax rightMotorController;
     private RelativeEncoder leftMotorEncoder;
     private RelativeEncoder rightMotorEncoder;
 
-    public Elevator(int leftMotorControllerID, int rightMotorControllerID) {
-        leftMotorController = new SparkMax(leftMotorControllerID, SparkLowLevel.MotorType.kBrushless);
-        rightMotorController = new SparkMax(rightMotorControllerID, SparkLowLevel.MotorType.kBrushless);
+    public Elevator() {
+        leftMotorController = new SparkMax(TunerConstants.getLeftElevatorMotorID(), SparkLowLevel.MotorType.kBrushless);
+        rightMotorController = new SparkMax(TunerConstants.getRightElevatorMotorID(), SparkLowLevel.MotorType.kBrushless);
 
         leftMotorEncoder = leftMotorController.getEncoder();
         rightMotorEncoder = rightMotorController.getEncoder();
 
-        configureElevatorWidget();
+        updateElevatorWidget();
     }
 
     // motor is the side the motor is on, either left or right.
@@ -49,11 +54,24 @@ public class Elevator {
         // TODO: figure out which side moves it up and which one moves it down
         // calculate number of rotations required
         double rotations = distance / (TunerConstants.getElevatorChainLength() * TunerConstants.getElevatorGearRatio() * TunerConstants.getElevatorRotations());
+    }
 
+    public void moveElevatorUp() {
+        leftMotorController.set(0.5); // Set motor speed to 50% of full speed
+        rightMotorController.set(0.5); // Set motor speed to 50% of full speed
+    }
+
+    public InstantCommand createMoveCommand() {
+        return new InstantCommand(() -> moveElevatorUp());
+    }
+
+    public void stopElevator() {
+        leftMotorController.set(0); // Stop motor
+        rightMotorController.set(0); // Stop motor
     }
 
     // create the widget in elastic
-    private void configureElevatorWidget() {
+    private void updateElevatorWidget() {
         SmartDashboard.putData("Elevator", new Sendable() {
             @Override
             public void initSendable(SendableBuilder builder) {
@@ -73,4 +91,5 @@ public class Elevator {
             }
         });
     }
+
 }

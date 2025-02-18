@@ -20,6 +20,8 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import frc.robot.Robot;
+
 public class Vision {
     private final PhotonCamera camera1;
     private final PhotonCamera camera2;

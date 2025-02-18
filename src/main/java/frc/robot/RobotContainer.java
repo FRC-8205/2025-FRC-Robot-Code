@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
-impprt frc.robot.subsystems.Vision;
+import frc.robot.subsystems.Vision;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -44,7 +44,7 @@ public class RobotContainer {
 
     public final Vision vision = new Vision();
 
-    public final Elevator elevator = new Elevator(TunerConstants.getLeftElevatorMotorID(), TunerConstants.getRightElevatorMotorID());
+    public final Elevator elevator = new Elevator();
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
@@ -91,10 +91,18 @@ public class RobotContainer {
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        /* DRIVER BUTTONS */
+        /* Elevator Up */
+        joystick.x().onTrue(elevator.createMoveCommand());
+        // joystick.a().onTrue(elevator.moveElevatorUp());
+        /* Reset Field-Centric Heading */
+        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
     }
 
     public Command getAutonomousCommand() {
         /* Run the path selected from the auto chooser */
         return autoChooser.getSelected();
     }
+
 }
