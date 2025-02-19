@@ -301,8 +301,8 @@ public class TunerConstants {
     // motor ids for the elevator
     // TODO: change to match actual ids
 
-    private static final int kLeftElevatorMotorID = 0;
-    private static final int kRightElevatorMotorID = 1;
+    private static final int kLeftElevatorMotorID = 1;
+    private static final int kRightElevatorMotorID = 2;
 
     public static int getLeftElevatorMotorID() {
         return kLeftElevatorMotorID;
@@ -313,22 +313,18 @@ public class TunerConstants {
     }
 
     // values to find the translational movement of the elevator with one rotation of the motor
-    private static double kElevatorChainLength = 0.25;
-    private static double kElevatorGearRatio = 16;
-    // not sure what this value means
-    private static int kElevatorRotations = 22;
+    private static final double kElevatorSproketDiamater = 1.751;
+    private static final double kElevatorsproketCircumference = kElevatorSproketDiamater * Math.PI;
+    private static final double kElevatorGearRatio = 16;
 
-    public static double getElevatorChainLength() {
-        return kElevatorChainLength;
+    public static double getElevatorSproketCircumference() {
+        return kElevatorsproketCircumference;
     }
 
     public static double getElevatorGearRatio() {
         return kElevatorGearRatio;
     }
 
-    public static int getElevatorRotations() {
-        return kElevatorRotations;
-    }
 
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(

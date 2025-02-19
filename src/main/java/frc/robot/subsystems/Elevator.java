@@ -1,97 +1,137 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkLowLevel;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.math.controller.PIDController;
 
 import frc.robot.generated.TunerConstants;
 
-public class Elevator {
+
+public class Elevator extends SubsystemBase {
 
     // devices
-    private SparkMax leftMotorController;
-    private SparkMax rightMotorController;
+    private SparkMax leftMotor; // Leader
+    private SparkMax rightMotor; // Follower
+
+    private final SparkMax.ResetMode resetMode;
+    private final SparkMax.PersistMode persisteMode;
+
     private RelativeEncoder leftMotorEncoder;
-    private RelativeEncoder rightMotorEncoder;
+
+
+    // PID
+    private final SparkMax.ControlType posControl = SparkMax.ControlType.kPosition;
+    private final SparkClosedLoopController lockPosition = leftMotor.getClosedLoopController();
+    private final PIDController elevatorPID = new PIDController(3, 1, 0);
+
+    // vars
+    private double revolutionCount;
+    private double setHeight;
+
+    public boolean locked = false;
+
 
     public Elevator() {
-        leftMotorController = new SparkMax(TunerConstants.getLeftElevatorMotorID(), SparkLowLevel.MotorType.kBrushless);
-        rightMotorController = new SparkMax(TunerConstants.getRightElevatorMotorID(), SparkLowLevel.MotorType.kBrushless);
+        leftMotor = new SparkMax(TunerConstants.getLeftElevatorMotorID(), SparkMax.MotorType.kBrushless);
+        rightMotor = new SparkMax(TunerConstants.getRightElevatorMotorID(), SparkMax.MotorType.kBrushless);
 
-        leftMotorEncoder = leftMotorController.getEncoder();
-        rightMotorEncoder = rightMotorController.getEncoder();
+        resetMode = SparkMax.ResetMode.kResetSafeParameters;
+        persisteMode = SparkMax.PersistMode.kPersistParameters;
 
-        updateElevatorWidget();
+        // encoder and PID configs
+        leftMotorEncoder = leftMotor.getEncoder();
+        elevatorPID.setTolerance(0.02);
+
+        // motor configs
+        SparkMaxConfig elevatorConfig = new SparkMaxConfig();
+        elevatorConfig.idleMode(IdleMode.kBrake);
+        elevatorConfig.inverted(false);
+        
+        SparkMaxConfig followerConfig = new SparkMaxConfig();
+        followerConfig.follow(leftMotor);
+
+
+        leftMotor.configure(elevatorConfig, resetMode, persisteMode);
+        rightMotor.configure(elevatorConfig, resetMode, persisteMode);
+        rightMotor.configure(followerConfig, resetMode, persisteMode);
+
+        
+        SmartDashboard.putData("Elevator PID", elevatorPID);
+
+        leftMotorEncoder.setPosition(0);
+
     }
 
-    // motor is the side the motor is on, either left or right.
-    public double getMotorPosition(String motor) {
-        if (motor.equals("left")) {
-            return leftMotorEncoder.getPosition();
-        } else {
-            return rightMotorEncoder.getPosition();
-        }
-    }
 
-    // motor is the side the motor is on, either left or right.
-    public double getMotorVelocity(String motor) {
-        if (motor.equals("left")) {
+    public double getMotorVelocity() {
             return leftMotorEncoder.getVelocity();
-        } else {
-            return rightMotorEncoder.getVelocity();
-        }
     }
 
-    // distance is the distance in inches from the lowest point, not current position
-    public void moveElevatorFromBottom(double distance) {
-        // TODO: figure out which side moves it up and which one moves it down
-        // calculate number of rotations required
-        double rotations = distance / (TunerConstants.getElevatorChainLength() * TunerConstants.getElevatorGearRatio() * TunerConstants.getElevatorRotations());
+    public double getHeightEncoder() {
+        return (revolutionCount / TunerConstants.getElevatorGearRatio()) * TunerConstants.getElevatorSproketCircumference();
     }
 
-    public void moveElevatorUp() {
-        leftMotorController.set(0.5); // Set motor speed to 50% of full speed
-        rightMotorController.set(-0.5); // Set motor speed to 50% of full speed
+
+    public void setElevatorSpeedManual(double value) {
+        leftMotor.set(value);
     }
 
-    public InstantCommand createMoveCommand() {
-        return new InstantCommand(() -> moveElevatorUp());
+    public double getEncoderValue() {
+        return revolutionCount;
     }
 
-    public void stopElevator() {
-        leftMotorController.set(0); // Stop motor
-        rightMotorController.set(0); // Stop motor
+    public void setPosition(double value) {
+        locked = true;
+        lockPosition.setReference(value, posControl);
     }
 
-    public InstantCommand createStopCommand() {
-        return new InstantCommand(() -> stopElevator());
+    public void stopHere() {
+        locked = true;
+        lockPosition.setReference(revolutionCount, posControl);
     }
 
-    // create the widget in elastic
-    private void updateElevatorWidget() {
-        SmartDashboard.putData("Elevator", new Sendable() {
-            @Override
-            public void initSendable(SendableBuilder builder) {
-                builder.setSmartDashboardType("Elevator");
+    public void setHeight(double height) {
+        locked = true;
+        setHeight = height;
+        double output = elevatorPID.calculate(getHeightEncoder(), height);
+        leftMotor.set(output);
+    }
 
-                // Left Motor
-                builder.addDoubleProperty("Left Motor Position",
-                 () -> getMotorPosition("left"), null);
-                builder.addDoubleProperty("Left Motor Velocity",
-                 () -> getMotorVelocity("left"), null);
+    public double getHeight() {
+        return getHeightEncoder();
+    }
 
-                // Right Motor
-                builder.addDoubleProperty("Right Motor Position",
-                 () -> getMotorPosition("right"), null);
-                builder.addDoubleProperty("Right Motor Velocity",
-                 () -> getMotorVelocity("right"), null);
-            }
-        });
+    public boolean atHeight() {
+        return elevatorPID.atSetpoint();
+    }
+
+    public void resetElevatorEncoder() {
+        leftMotorEncoder.setPosition(0);
+    }
+
+    public double getSetpoint() {
+        return setHeight;
+    }
+
+    public double getPosition() {
+        return leftMotorEncoder.getPosition();
+    }
+
+
+    @Override
+    public void periodic() {
+        revolutionCount = leftMotorEncoder.getPosition();
+
+        SmartDashboard.putNumber("Elevator Motor Velocity", getMotorVelocity());
+        SmartDashboard.putNumber("Encoder Height", getHeightEncoder());
+        SmartDashboard.putNumber("Elevator Left Supply Current", leftMotor.getOutputCurrent());
+        SmartDashboard.putNumber("Elevator Right Supply Current", rightMotor.getOutputCurrent());
     }
 
 }

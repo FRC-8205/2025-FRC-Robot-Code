@@ -20,9 +20,11 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.robot.Robot;
 
-public class Vision {
+public class Vision extends SubsystemBase {
     private final PhotonCamera camera1;
     private final PhotonCamera camera2;
     private final PhotonCamera camera3;

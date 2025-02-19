@@ -4,11 +4,17 @@
 
 package frc.robot;
 
+import java.util.Optional;
+
 // import com.ctre.phoenix6.Utils;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 // import edu.wpi.first.math.kinematics.SwerveModuleState;
 // import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
@@ -26,8 +32,21 @@ public class Robot extends TimedRobot {
 
   private double matchTime;
 
+  private static boolean redAlliance;
+
+  PowerDistribution PDH;
+
   public Robot() {
     m_robotContainer = new RobotContainer();
+
+    PDH = new PowerDistribution(1, ModuleType.kRev);
+
+    SmartDashboard.putData(CommandScheduler.getInstance());
+
+    SmartDashboard.putData(PDH);
+    PDH.setSwitchableChannel(true);
+
+    redAlliance = checkRedAlliance();
   }
 
   @Override
@@ -56,6 +75,21 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
 
   }
+
+      /** Gets the current alliance, true is red */
+    public static boolean getAlliance() {
+        return redAlliance;
+    }
+
+    public static boolean checkRedAlliance() {
+        Optional<Alliance> alliance = DriverStation.getAlliance();
+        if (alliance.isPresent()) {
+            return alliance.get() == DriverStation.Alliance.Red;
+        } else {
+            DataLogManager.log("ERROR: Alliance not found. Defaulting to Blue");
+            return false;
+        }
+    }
 
   @Override
   public void disabledInit() {}
