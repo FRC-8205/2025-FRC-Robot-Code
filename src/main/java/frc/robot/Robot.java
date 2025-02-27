@@ -56,15 +56,15 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
 
     // Correct pose estimate with vision measurements
-    var visionEst = m_robotContainer.vision.getEstimatedGlobalPose();
-    visionEst.ifPresent(
-      est -> {
-        // Change our trust in the measurement based on the tags we can see
-        var estStdDevs = m_robotContainer.vision.getEstimationStdDevs();
+    // var visionEst = m_robotContainer.vision.getEstimatedGlobalPose();
+    // visionEst.ifPresent(
+    //   est -> {
+    //     // Change our trust in the measurement based on the tags we can see
+    //     var estStdDevs = m_robotContainer.vision.getEstimationStdDevs();
     
-        m_robotContainer.drivetrain.addVisionMeasurement(
-        est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
-      });
+    //     m_robotContainer.drivetrain.addVisionMeasurement(
+    //     est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
+    //   });
 
     matchTime = getMatchTime();  
     // Prevent showing -1 when disabled
@@ -151,10 +151,10 @@ public class Robot extends TimedRobot {
     m_robotContainer.drivetrain.simulationPeriodic();
 
     // Update camera simulation
-    m_robotContainer.vision.simulationPeriodic(m_robotContainer.drivetrain.getState().Pose);
+    // m_robotContainer.vision.simulationPeriodic(m_robotContainer.drivetrain.getState().Pose);
     
-    var debugField = m_robotContainer.vision.getSimDebugField();
-    debugField.getObject("EstimatedRobot").setPose(m_robotContainer.drivetrain.getState().Pose);
+    // var debugField = m_robotContainer.vision.getSimDebugField();
+    // debugField.getObject("EstimatedRobot").setPose(m_robotContainer.drivetrain.getState().Pose);
     // debugField.getObject("EstimatedRobotModules").setPoses(m_robotContainer.drivetrain.getModulePoses());
     
     // Using max(0.1, voltage) here isn't a *physically correct* solution,
@@ -168,7 +168,7 @@ public class Robot extends TimedRobot {
     // The first pose in an autonomous path is often a good choice.
     var startPose = new Pose2d(1, 1, new Rotation2d());
     m_robotContainer.drivetrain.resetPose(startPose);
-    m_robotContainer.vision.resetSimPose(startPose);
+    // m_robotContainer.vision.resetSimPose(startPose);
   }
 
   public double getMatchTime() {
