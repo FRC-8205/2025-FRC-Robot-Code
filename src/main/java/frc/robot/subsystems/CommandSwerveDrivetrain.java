@@ -6,10 +6,7 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
-// import com.ctre.phoenix6.hardware.CANcoder;
-// import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-// import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -19,23 +16,17 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-// import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.generated.TunerConstants;
+
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -59,8 +50,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
-    // private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
-    // private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+    private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
+    private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -78,89 +69,51 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         )
     );
 
-    // /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
-    // private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
-    //     new SysIdRoutine.Config(
-    //         null,        // Use default ramp rate (1 V/s)
-    //         Volts.of(7), // Use dynamic voltage of 7 V
-    //         null,        // Use default timeout (10 s)
-    //         // Log state with SignalLogger class
-    //         state -> SignalLogger.writeString("SysIdSteer_State", state.toString())
-    //     ),
-    //     new SysIdRoutine.Mechanism(
-    //         volts -> setControl(m_steerCharacterization.withVolts(volts)),
-    //         null,
-    //         this
-    //     )
-    // );
+    /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
+    private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
+        new SysIdRoutine.Config(
+            null,        // Use default ramp rate (1 V/s)
+            Volts.of(7), // Use dynamic voltage of 7 V
+            null,        // Use default timeout (10 s)
+            // Log state with SignalLogger class
+            state -> SignalLogger.writeString("SysIdSteer_State", state.toString())
+        ),
+        new SysIdRoutine.Mechanism(
+            volts -> setControl(m_steerCharacterization.withVolts(volts)),
+            null,
+            this
+        )
+    );
 
-    // /*
-    //  * SysId routine for characterizing rotation.
-    //  * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
-    //  * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
-    //  */
-    // private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
-    //     new SysIdRoutine.Config(
-    //         /* This is in radians per second², but SysId only supports "volts per second" */
-    //         Volts.of(Math.PI / 6).per(Second),
-    //         /* This is in radians per second, but SysId only supports "volts" */
-    //         Volts.of(Math.PI),
-    //         null, // Use default timeout (10 s)
-    //         // Log state with SignalLogger class
-    //         state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
-    //     ),
-    //     new SysIdRoutine.Mechanism(
-    //         output -> {
-    //             /* output is actually radians per second, but SysId only supports "volts" */
-    //             setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
-    //             /* also log the requested output for SysId */
-    //             SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
-    //         },
-    //         null,
-    //         this
-    //     )
-    // );
+    /*
+     * SysId routine for characterizing rotation.
+     * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
+     * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
+     */
+    private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
+        new SysIdRoutine.Config(
+            /* This is in radians per second², but SysId only supports "volts per second" */
+            Volts.of(Math.PI / 6).per(Second),
+            /* This is in radians per second, but SysId only supports "volts" */
+            Volts.of(Math.PI),
+            null, // Use default timeout (10 s)
+            // Log state with SignalLogger class
+            state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
+        ),
+        new SysIdRoutine.Mechanism(
+            output -> {
+                /* output is actually radians per second, but SysId only supports "volts" */
+                setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+                /* also log the requested output for SysId */
+                SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
+            },
+            null,
+            this
+        )
+    );
 
     /* The SysId routine to test */
     private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
-
-
-    /**
-     * Returns the current module poses.
-     *
-     * @return The current module poses
-     */
-    public Pose2d[] getModulePoses() {
-    // Get the robot's current pose from the drivetrain state.
-    Pose2d robotPose = getState().Pose;
-
-    // Compute each module's field pose by adding the module offset (rotated by the robot's rotation) to the robot's translation.
-    Pose2d frontLeftPose  = addModuleOffset(robotPose, TunerConstants.getFrontLeftXPos(), TunerConstants.getFrontLeftYPos());
-    Pose2d frontRightPose = addModuleOffset(robotPose, TunerConstants.getFrontRightXPos(), TunerConstants.getFrontRightYPos());
-    Pose2d backLeftPose   = addModuleOffset(robotPose, TunerConstants.getBackLeftXPos(), TunerConstants.getBackLeftYPos());
-    Pose2d backRightPose  = addModuleOffset(robotPose, TunerConstants.getBackRightXPos(), TunerConstants.getBackRightYPos());
-
-    return new Pose2d[] { frontLeftPose, frontRightPose, backLeftPose, backRightPose };
-}
-
-    /**
-     * Adds the module offset to the robot's pose.
-     *
-     * @param robotPose The robot's current pose
-     * @param offsetX   The x offset of the module
-     * @param offsetY   The y offset of the module
-     * @return The new pose for the module
-     */
-    private Pose2d addModuleOffset(Pose2d robotPose, double offsetX, double offsetY) {
-        // Create a Translation2d from the offset.
-        Translation2d offset = new Translation2d(offsetX, offsetY);
-        // Rotate the offset according to the robot's current rotation.
-        Translation2d rotatedOffset = offset.rotateBy(robotPose.getRotation());
-        // Return the new pose for the module.
-        return new Pose2d(robotPose.getTranslation().plus(rotatedOffset), robotPose.getRotation());
-    }
-
-
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -180,10 +133,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-
         configureAutoBuilder();
-
-        configureSwerveWidget();
     }
 
     /**
@@ -208,10 +158,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-
         configureAutoBuilder();
-
-        configureSwerveWidget();
     }
 
     /**
@@ -244,10 +191,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-
         configureAutoBuilder();
-
-        configureSwerveWidget();
     }
 
     private void configureAutoBuilder() {
@@ -330,10 +274,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
-
-        // Publish velocity to SmartDashboard
-        SmartDashboard.putNumber("Robot Velocity (m/s)", getRobotVelocity());
-        
     }
 
     private void startSimThread() {
@@ -349,49 +289,5 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
-    }
-
-    public double getRobotVelocity() {
-        // Get the robot’s velocity magnitude from the drivetrain state
-        return getState().Speeds.vxMetersPerSecond;
-    }
-    
-    private void configureSwerveWidget() {
-                // Publish the Swerve Drive Widget to SmartDashboard
-        SmartDashboard.putData("Swerve Drive", new Sendable() {
-            @Override
-            public void initSendable(SendableBuilder builder) {
-                builder.setSmartDashboardType("SwerveDrive");
-
-                // Front Left Module
-                builder.addDoubleProperty("Front Left Angle", 
-                    () -> getModule(0).getCurrentState().angle.getRadians(), null);
-                builder.addDoubleProperty("Front Left Velocity", 
-                    () -> getModule(0).getCurrentState().speedMetersPerSecond, null);
-
-                // Front Right Module
-                builder.addDoubleProperty("Front Right Angle", 
-                    () -> getModule(1).getCurrentState().angle.getRadians(), null);
-                builder.addDoubleProperty("Front Right Velocity", 
-                    () -> getModule(1).getCurrentState().speedMetersPerSecond, null);
-
-                // Back Left Module
-                builder.addDoubleProperty("Back Left Angle", 
-                    () -> getModule(2).getCurrentState().angle.getRadians(), null);
-                builder.addDoubleProperty("Back Left Velocity", 
-                    () -> getModule(2).getCurrentState().speedMetersPerSecond, null);
-
-                // Back Right Module
-                builder.addDoubleProperty("Back Right Angle", 
-                    () -> getModule(3).getCurrentState().angle.getRadians(), null);
-                builder.addDoubleProperty("Back Right Velocity", 
-                    () -> getModule(3).getCurrentState().speedMetersPerSecond, null);
-
-                // Robot Angle
-                builder.addDoubleProperty("Robot Angle", 
-                    () -> getState().Pose.getRotation().getRadians(), null);
-            }
-        });
-    
     }
 }

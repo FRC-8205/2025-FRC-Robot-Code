@@ -248,7 +248,7 @@ public class TunerConstants {
     }
 
     // Back Right
-    private static final int kBackRightDriveMotorId = 1;
+    private static final int kBackRightDriveMotorId = 16;
     private static final int kBackRightSteerMotorId = 15;
     private static final int kBackRightEncoderId = 12;
     private static final Angle kBackRightEncoderOffset = Rotations.of(0.292724609375);
@@ -280,7 +280,6 @@ public class TunerConstants {
     }
 
     // motor ids for the elevator
-    // TODO: change to match actual ids
 
     private static final int kLeftElevatorMotorID = 13;
     private static final int kRightElevatorMotorID = 14;

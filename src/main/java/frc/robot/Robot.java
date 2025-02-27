@@ -76,6 +76,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
 
+    m_robotContainer.elevator.updateDashboard();
+
   }
 
       /** Gets the current alliance, true is red */
@@ -122,7 +124,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    resetPose();
+    resetPose(); // maybe try deleting this line of code to see if that fixes swerve.
   }
 
   @Override
@@ -153,7 +155,7 @@ public class Robot extends TimedRobot {
     
     var debugField = m_robotContainer.vision.getSimDebugField();
     debugField.getObject("EstimatedRobot").setPose(m_robotContainer.drivetrain.getState().Pose);
-    debugField.getObject("EstimatedRobotModules").setPoses(m_robotContainer.drivetrain.getModulePoses());
+    // debugField.getObject("EstimatedRobotModules").setPoses(m_robotContainer.drivetrain.getModulePoses());
     
     // Using max(0.1, voltage) here isn't a *physically correct* solution,
     // but it avoids problems with battery voltage measuring 0.

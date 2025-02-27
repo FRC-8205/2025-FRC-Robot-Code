@@ -45,9 +45,9 @@ public class RobotContainer {
     /* Subsystems */
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    // public final Vision vision = new Vision();
+    public final Vision vision = new Vision();
 
-    // public final Elevator elevator = new Elevator();
+    public final Elevator elevator = new Elevator();
 
 
     /* Path follower */
@@ -95,12 +95,12 @@ public class RobotContainer {
 
         /* DRIVER BUTTONS */
         // Elevator Up
-        // m_driverController.x().onTrue(new InstantCommand(() -> elevator.setElevatorSpeedManual(.5)));
-        // m_driverController.x().onFalse(new InstantCommand(() -> elevator.stopHere()));
+        m_driverController.a().onTrue(new InstantCommand(() -> elevator.moveElevatorUpCommand()));
+        m_driverController.a().onFalse(new InstantCommand(() -> elevator.stopElevatorCommand()));
 
-        // // Elevator Down
-        // m_driverController.b().onTrue(new InstantCommand(() -> elevator.setElevatorSpeedManual(-.5)));
-        // m_driverController.b().onFalse(new InstantCommand(() -> elevator.stopHere()));
+        // Elevator Down
+        m_driverController.b().onTrue(new InstantCommand(() -> elevator.moveElevatorDownCommand()));
+        m_driverController.b().onFalse(new InstantCommand(() -> elevator.stopElevatorCommand()));
         
         // Reset Field-Centric Heading 
         m_driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
