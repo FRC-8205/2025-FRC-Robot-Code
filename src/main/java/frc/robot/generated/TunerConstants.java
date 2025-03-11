@@ -26,7 +26,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class TunerConstants {
     // Constants for the camera setup
     public static class Vision {
-        public static final String kCameraName1 = "Bob";
+        public static final String kCameraName1 = "BOB_OV9281";
         public static final String kCameraName2 = "Sharon";
         public static final String kCameraName3 = "Derik";
 
@@ -305,6 +305,34 @@ public class TunerConstants {
         return kElevatorGearRatio;
     }
 
+    // values for PID on the elevator
+    private static final double kElevatorP = .05;
+    private static final double kElevatorI = 0;
+    private static final double kElevatorD = .01;
+
+    public static double getElevatorP() {
+        return kElevatorP;
+    }
+
+    public static double getElevatorI() {
+        return kElevatorI;
+    }
+
+    public static double getElevatorD() {
+        return kElevatorD;
+    }
+
+    // motor id's for the coral launcher
+    private static final int kCoralLauncherRotatingMotorID = 17;
+    private static final int kCoralLauncherLaunchingMotorID = 18;
+
+    public static int getCoralLauncherRotatingMotorID() {
+        return kCoralLauncherRotatingMotorID;
+    }
+
+    public static int getCoralLauncherLaunchingMotorID() {
+        return kCoralLauncherLaunchingMotorID;
+    }
 
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(

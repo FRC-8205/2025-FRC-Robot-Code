@@ -14,136 +14,18 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.generated.TunerConstants;
 
 
-// public class Elevator extends SubsystemBase {
-
-//     // devices
-//     private SparkMax leftMotor; // Leader
-//     private SparkMax rightMotor; // Follower
-
-//     private final SparkMax.ResetMode resetMode;
-//     private final SparkMax.PersistMode persisteMode;
-
-//     private RelativeEncoder leftMotorEncoder;
-
-
-//     // PID
-//     private final SparkMax.ControlType posControl = SparkMax.ControlType.kPosition;
-//     private final SparkClosedLoopController lockPosition = leftMotor.getClosedLoopController();
-//     private final PIDController elevatorPID = new PIDController(3, 1, 0);
-
-//     // vars
-//     private double revolutionCount;
-//     private double setHeight;
-
-//     public boolean locked = false;
-
-
-//     public Elevator() {
-//         leftMotor = new SparkMax(TunerConstants.getLeftElevatorMotorID(), SparkMax.MotorType.kBrushless);
-//         rightMotor = new SparkMax(TunerConstants.getRightElevatorMotorID(), SparkMax.MotorType.kBrushless);
-
-//         resetMode = SparkMax.ResetMode.kResetSafeParameters;
-//         persisteMode = SparkMax.PersistMode.kPersistParameters;
-
-//         // encoder and PID configs
-//         leftMotorEncoder = leftMotor.getEncoder();
-//         elevatorPID.setTolerance(0.02);
-
-//         // motor configs
-//         SparkMaxConfig elevatorConfig = new SparkMaxConfig();
-//         elevatorConfig.idleMode(IdleMode.kBrake);
-//         elevatorConfig.inverted(true);
-        
-//         SparkMaxConfig followerConfig = new SparkMaxConfig();
-//         followerConfig.follow(leftMotor, true);
-
-
-//         leftMotor.configure(elevatorConfig, resetMode, persisteMode);
-//         rightMotor.configure(elevatorConfig, resetMode, persisteMode);
-//         rightMotor.configure(followerConfig, resetMode, persisteMode);
-//         rightMotor.configure(followerConfig, resetMode, persisteMode);
-
-        
-//         SmartDashboard.putData("Elevator PID", elevatorPID);
-
-//         leftMotorEncoder.setPosition(0);
-
-//     }
-
-
-//     public double getMotorVelocity() {
-//             return leftMotorEncoder.getVelocity();
-//     }
-
-//     public double getHeightEncoder() {
-//         return (revolutionCount / TunerConstants.getElevatorGearRatio()) * TunerConstants.getElevatorSproketCircumference();
-//     }
-
-
-//     public void setElevatorSpeedManual(double value) {
-//         leftMotor.set(value);
-//     }
-
-//     public double getEncoderValue() {
-//         return revolutionCount;
-//     }
-
-//     public void setPosition(double value) {
-//         locked = true;
-//         lockPosition.setReference(value, posControl);
-//     }
-
-//     public void stopHere() {
-//         locked = true;
-//         lockPosition.setReference(revolutionCount, posControl);
-//     }
-
-//     public void setHeight(double height) {
-//         locked = true;
-//         setHeight = height;
-//         double output = elevatorPID.calculate(getHeightEncoder(), height);
-//         leftMotor.set(output);
-//     }
-
-//     public double getHeight() {
-//         return getHeightEncoder();
-//     }
-
-//     public boolean atHeight() {
-//         return elevatorPID.atSetpoint();
-//     }
-
-//     public void resetElevatorEncoder() {
-//         leftMotorEncoder.setPosition(0);
-//     }
-
-//     public double getSetpoint() {
-//         return setHeight;
-//     }
-
-//     public double getPosition() {
-//         return leftMotorEncoder.getPosition();
-//     }
-
-
-//     @Override
-//     public void periodic() {
-//         revolutionCount = leftMotorEncoder.getPosition();
-
-//         SmartDashboard.putNumber("Elevator Motor Velocity", getMotorVelocity());
-//         SmartDashboard.putNumber("Encoder Height", getHeightEncoder());
-//         SmartDashboard.putNumber("Elevator Left Supply Current", leftMotor.getOutputCurrent());
-//         SmartDashboard.putNumber("Elevator Right Supply Current", rightMotor.getOutputCurrent());
-//     }
-
-// }
-
 public class Elevator extends SubsystemBase {
     private SparkMax leftMotor;
     private SparkMax rightMotor;
 
     private RelativeEncoder leftMotorEncoder;
     private RelativeEncoder rightMotorEncoder;
+    
+    private PIDController pidController;
+    private boolean locked;
+
+    private double targetPosition;
+
 
     public Elevator() {
         leftMotor = new SparkMax(TunerConstants.getLeftElevatorMotorID(), SparkMax.MotorType.kBrushless);
@@ -152,27 +34,65 @@ public class Elevator extends SubsystemBase {
         leftMotorEncoder = leftMotor.getEncoder();
         rightMotorEncoder = rightMotor.getEncoder();
 
+        locked = false;
+
+        SparkMaxConfig followerConfig = new SparkMaxConfig();
+        followerConfig.follow(leftMotor, true);
+
+        rightMotor.configure(followerConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters);
+
+        pidController = new PIDController(.3, 0.0, 0.0);
+        pidController.setTolerance(0.02); 
+        // pidController.setIntegratorRange(-0.5, 0.5); 
+
         configureDashboard();
     }
 
     private void moveElevatorUp() {
         // speed is a value between -1 and 1
-        // motors need to spin in opposite directions
-        leftMotor.set(0.5);
-        rightMotor.set(-0.5);
+        locked = false;
+        leftMotor.set(-0.1);
     }
 
     private void moveElevatorDown() {
         // speed is a value between -1 and 1
-        // motors need to spin in opposite directions
-        leftMotor.set(-0.5);
-        rightMotor.set(0.5);
+        locked = false;
+        leftMotor.set(0.1);
+    }
+
+    // Set the target position for the elevator
+    private void setElevatorPosition(double setPos) {
+        locked = true;
+        targetPosition = setPos;
+        pidController.setSetpoint(setPos);
+    }
+
+    // Move the elevator towards the target position using the PID controller
+    private void moveElevatorToTarget() {
+        // Calculate the output using the PID controller
+        double output = pidController.calculate(leftMotorEncoder.getPosition());
+        output = Math.max(Math.min(output, 0.2), -0.2); // Limit the output to reduce top speed
+
+        // Set the motor power
+        leftMotor.set(output);
+
+        // If at setpoint, stop the motor
+        if (pidController.atSetpoint()) {
+            leftMotor.stopMotor(); // Stop the motor when it reaches the target position
+        }
     }
 
     private void stopElevator() {
         leftMotor.set(0);
-        rightMotor.set(0);
     }
+
+    // Command to set the elevator to a position
+    public InstantCommand setElevatorCommand(double setPos) {
+        return new InstantCommand(() -> {
+            setElevatorPosition(setPos);
+            moveElevatorToTarget();
+        });
+    }    
 
     public InstantCommand moveElevatorUpCommand() {
         return new InstantCommand(() -> moveElevatorUp());
@@ -194,7 +114,7 @@ public class Elevator extends SubsystemBase {
         return rightMotorEncoder.getVelocity();
     }
 
-    private double getElevatorHeight() {
+    private double getElevatorBottomHeight() {
         return leftMotorEncoder.getPosition() / TunerConstants.getElevatorGearRatio() * TunerConstants.getElevatorSproketCircumference();
     }
 
@@ -205,10 +125,27 @@ public class Elevator extends SubsystemBase {
         SmartDashboard.putNumber("Elevator Left Motor Current", leftMotor.getOutputCurrent());
         SmartDashboard.putNumber("Elevator Right Motor Current", rightMotor.getOutputCurrent());
 
-        SmartDashboard.putNumber("Elevator Height", getElevatorHeight());
+        SmartDashboard.putNumber("Elevator Left Motor Bus Voltage", leftMotor.getBusVoltage());
+        SmartDashboard.putNumber("Elevator Right Motor Bus Voltage", rightMotor.getBusVoltage());
+
+        SmartDashboard.putNumber("Encoder Position", leftMotorEncoder.getPosition());
+
+        SmartDashboard.putNumber("Elevator Height", getElevatorBottomHeight());
+
+        SmartDashboard.putNumber("Target Position", targetPosition);
+
     }
 
     public void updateDashboard() {
         configureDashboard();
+    }
+
+    // Periodic method for subsystem updates
+    @Override
+    public void periodic() {
+        if(locked) {
+            moveElevatorToTarget(); 
+        }
+        updateDashboard(); // Update the dashboard with the latest information
     }
 }
