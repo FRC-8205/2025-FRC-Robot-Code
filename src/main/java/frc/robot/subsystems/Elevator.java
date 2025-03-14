@@ -1,15 +1,16 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkClosedLoopController;
+//import com.revrobotics.spark.SparkClosedLoopController;
+//import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 import frc.robot.generated.TunerConstants;
 
@@ -26,6 +27,8 @@ public class Elevator extends SubsystemBase {
 
     private double targetPosition;
 
+    private DutyCycleEncoder throughBoreEncoder;
+
 
     public Elevator() {
         leftMotor = new SparkMax(TunerConstants.getLeftElevatorMotorID(), SparkMax.MotorType.kBrushless);
@@ -33,6 +36,8 @@ public class Elevator extends SubsystemBase {
 
         leftMotorEncoder = leftMotor.getEncoder();
         rightMotorEncoder = rightMotor.getEncoder();
+
+        throughBoreEncoder = new DutyCycleEncoder(0, 360, 0);
 
         locked = false;
 
@@ -133,6 +138,8 @@ public class Elevator extends SubsystemBase {
         SmartDashboard.putNumber("Elevator Height", getElevatorBottomHeight());
 
         SmartDashboard.putNumber("Target Position", targetPosition);
+
+        SmartDashboard.putNumber("Through Bore Encoder", throughBoreEncoder.get());
 
     }
 

@@ -11,8 +11,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.XboxController;
+//import edu.wpi.first.math.geometry.Rotation2d;
+//import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,6 +23,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Vision;
+//import frc.robot.subsystems.Coral;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -47,14 +48,14 @@ public class RobotContainer {
     public final Vision vision = new Vision();
 
     public final Elevator elevator = new Elevator();
-    
 
+    //public final Coral coral = new Coral();
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
+        autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Mode", autoChooser);
 
         configureBindings();
@@ -94,12 +95,11 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         /* DRIVER BUTTONS */
-        // Elevator Down
-        // doesn't work
+        // Elevator Down - this is correct
         m_driverController.a().onTrue(elevator.moveElevatorUpCommand());
         m_driverController.a().onFalse(elevator.stopElevatorCommand());
 
-        // Elevator Up
+        // Elevator Up - this is correct
         m_driverController.b().onTrue(elevator.moveElevatorDownCommand());
         m_driverController.b().onFalse(elevator.stopElevatorCommand());
 
@@ -112,7 +112,24 @@ public class RobotContainer {
         // Reset Field-Centric Heading 
         m_driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
+    //     /* CORAL BUTTONS */
+    //     // // Coral Output
+    //     m_driverController.rightBumper().onTrue(coral.indexerCommand(0.1));
+    //     m_driverController.rightBumper().onFalse(coral.stopIndexingCommand());
+
+    //     // Coral Rotate Down
+    //     // m_driverController.rightBumper().onTrue(coral.rotateCommand(0.1));
+    //     // m_driverController.rightBumper().onFalse(coral.stopRotatingCommand());
+
+    //     // Coral Rotate Up 
+    //     m_driverController.leftBumper().onTrue(coral.rotateCommand(-0.1));
+    //     m_driverController.leftBumper().onFalse(coral.stopRotatingCommand());
+
+    //     // Coral Rotate Down PID
+    //     m_driverController.rightTrigger().onTrue(coral.setCoralCommand(2));
         
+    //     // Coral Rotate Up PID
+    //     m_driverController.leftTrigger().onTrue(coral.setCoralCommand(-2));
     }
 
     public Command getAutonomousCommand() {
