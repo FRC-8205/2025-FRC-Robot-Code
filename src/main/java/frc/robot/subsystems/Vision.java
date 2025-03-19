@@ -9,16 +9,25 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.PhotonUtils;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
+
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import frc.robot.Utils.Units;
+import frc.robot.generated.TunerConstants;
+import frc.robot.RobotContainer;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -218,5 +227,46 @@ public class Vision extends SubsystemBase {
     public Field2d getSimDebugField() {
         if (!Robot.isSimulation()) return null;
         return visionSim.getDebugField();
+    }
+
+    // move to the april tag infront of the robot
+    public void moveToClosestAprilTag() {
+        boolean targetVisible = false;
+        double targetYaw = 0.0;
+        double targetRange = 0.0;
+        // only uses BOB camera
+        var results = camera1.getAllUnreadResults();
+
+        if (!results.isEmpty()) {
+            // Camera processed a new frame since last
+            // Get the last one in the list.
+            var result = results.get(results.size() - 1);
+            if (result.hasTargets()) {
+                // At least one AprilTag was seen by the camera
+                for (var target : result.getTargets()) {
+                    if (target.getFiducialId() == 10) {
+                        // Found Tag 10, record its information
+                        targetYaw = target.getYaw();
+                        targetRange =
+                                PhotonUtils.calculateDistanceToTargetMeters(
+                                        0.188339772418, // Measured with a tape measure, or in CAD.
+                                        0.22225, // From 2024 game manual for ID 7
+                                        Units.degreesToRadians(-15.0), // Measured with a protractor, or in CAD.
+                                        Units.degreesToRadians(target.getPitch()));
+
+                        targetVisible = true;
+                    }
+                }
+            }
+        }
+
+        if (targetVisible) {
+            // move the robot to the target
+            double turn = -targetYaw * 7 * RobotContainer.getMaxAngularRate(); // in degrees I think
+            double move = (1 - targetRange) * 10 * RobotContainer.getMaxSpeed(); // shift to be 0.5 meters from the target
+
+            // need to send command to drivetrain to move
+            // Pose2d targetPose = new Pose2d()
+        }
     }
 }

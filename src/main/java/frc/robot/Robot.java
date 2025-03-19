@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 // import edu.wpi.first.math.kinematics.SwerveModuleState;
 // import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 // import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -65,6 +66,9 @@ public class Robot extends TimedRobot {
     
         m_robotContainer.drivetrain.addVisionMeasurement(
         est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
+
+        SmartDashboard.putNumber("Vistion Estimate X", est.estimatedPose.toPose2d().getX());
+        SmartDashboard.putNumber("Vision Estimate Y", est.estimatedPose.toPose2d().getY());
       });
 
     matchTime = getMatchTime();  

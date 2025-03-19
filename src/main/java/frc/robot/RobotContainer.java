@@ -11,6 +11,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+
+import edu.wpi.first.util.sendable.Sendable;
 //import edu.wpi.first.math.geometry.Rotation2d;
 //import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -24,10 +26,20 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Vision;
 //import frc.robot.subsystems.Coral;
+import frc.robot.subsystems.Winch;
+import frc.robot.subsystems.CustomKeyboard;
 
 public class RobotContainer {
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private static double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private static double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
+    public static double getMaxSpeed() {
+        return MaxSpeed;
+    }
+
+    public static double getMaxAngularRate() {
+        return MaxAngularRate;
+    }
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -51,13 +63,20 @@ public class RobotContainer {
 
     //public final Coral coral = new Coral();
 
+    public final Winch winch = new Winch();
+
+    public final CustomKeyboard keyboard = new CustomKeyboard(1);
+
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
+
+    //Testing for PathPlanner AutoChooser - Fullagar
+    //private final SendableChooser<Command> buildAutChooser;
 
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Mode", autoChooser);
-
+       
         configureBindings();
     }
 
@@ -96,12 +115,33 @@ public class RobotContainer {
 
         /* DRIVER BUTTONS */
         // Elevator Down - this is correct
-        m_driverController.a().onTrue(elevator.moveElevatorUpCommand());
-        m_driverController.a().onFalse(elevator.stopElevatorCommand());
+        // m_driverController.a().onTrue(elevator.moveElevatorUpCommand());
+        // m_driverController.a().onFalse(elevator.stopElevatorCommand());
+
+        // Testing following april tag
+        // m_driverController.x().onTrue(() -> {
+        //     double[] movement = vision.moveToClosestAprilTag();
+            
+        //     if (movement.length == 2) {
+        //         drivetrain.applyRequest(() -> drive.withRotationalRate(movement[0]));
+        //         drivetrain.applyRequest(() -> drive.withVelocityX(movement[1]));
+        //     } else {
+        //         System.out.println("Error with vision estimate");
+        //     }
+            
+        // });
+
+        //Testing Winch
+        m_driverController.a().onTrue(winch.turnInCommand());
+        m_driverController.a().onFalse(winch.stopMotorCommand());
+
+        //Testing Winch Release
+        m_driverController.b().onTrue(winch.turnOutCommand());
+        m_driverController.b().onFalse(winch.stopMotorCommand());
 
         // Elevator Up - this is correct
-        m_driverController.b().onTrue(elevator.moveElevatorDownCommand());
-        m_driverController.b().onFalse(elevator.stopElevatorCommand());
+        // m_driverController.b().onTrue(elevator.moveElevatorDownCommand());
+        // m_driverController.b().onFalse(elevator.stopElevatorCommand());
 
         // Elevator to Level 1 
         m_driverController.x().onTrue(elevator.setElevatorCommand(10));
@@ -111,6 +151,22 @@ public class RobotContainer {
         
         // Reset Field-Centric Heading 
         m_driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+
+        // WINCH COMMANDS
+        // turn winch in
+        m_driverController.leftTrigger().onTrue(winch.turnInCommand());
+        m_driverController.leftTrigger().onFalse(winch.stopMotorCommand());
+
+        // turn winch out
+        m_driverController.rightTrigger().onTrue(winch.turnOutCommand());
+        m_driverController.rightTrigger().onFalse(winch.stopMotorCommand());
+
+        
+        // CUSTOM BINDINGS
+        keyboard.moveLevel1().onTrue(elevator.setElevatorCommand(1));
+        keyboard.moveLevel2().onTrue(elevator.setElevatorCommand(2));
+        keyboard.moveLevel3().onTrue(elevator.setElevatorCommand(3));
+        keyboard.moveLevel4().onTrue(elevator.setElevatorCommand(4));
 
     //     /* CORAL BUTTONS */
     //     // // Coral Output
@@ -130,6 +186,8 @@ public class RobotContainer {
         
     //     // Coral Rotate Up PID
     //     m_driverController.leftTrigger().onTrue(coral.setCoralCommand(-2));
+        
+    
     }
 
     public Command getAutonomousCommand() {

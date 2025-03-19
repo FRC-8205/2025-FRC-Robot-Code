@@ -334,6 +334,13 @@ public class TunerConstants {
         return kCoralLauncherLaunchingMotorID;
     }
 
+    // winch id's
+    private static final int kHangingMotorID = 19;
+
+    public static int getHangingMotorID() {
+        return kHangingMotorID;
+    }
+
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(
             kFrontLeftSteerMotorId, kFrontLeftDriveMotorId, kFrontLeftEncoderId, kFrontLeftEncoderOffset,
