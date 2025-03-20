@@ -243,7 +243,7 @@ public class Vision extends SubsystemBase {
     }
 
     // move to the april tag infront of the robot
-    public Command moveToClosestAprilTag() {
+    public Command moveToClosestAprilTag(int fiducialID) {
         boolean targetVisible = false;
         double targetYaw = 0.0;
         double targetRange = 0.0;
@@ -257,7 +257,7 @@ public class Vision extends SubsystemBase {
             if (result.hasTargets()) {
                 // At least one AprilTag was seen by the camera
                 for (var target : result.getTargets()) {
-                    if (target.getFiducialId() == 10) {
+                    if (target.getFiducialId() == fiducialID) {
                         // Found Tag 10, record its information
                         targetYaw = target.getYaw();
                         targetRange =
