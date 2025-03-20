@@ -322,23 +322,26 @@ public class TunerConstants {
         return kElevatorD;
     }
 
-    // motor id's for the coral launcher
-    private static final int kCoralLauncherRotatingMotorID = 17;
-    private static final int kCoralLauncherLaunchingMotorID = 18;
+    // motor id's for coral and algae launcher
+    private static final int kCoralLaunchMotor1ID = 17;
+    private static final int kCoralLaunchMotor2ID = 18;
+    private static final int kAlgaeIndexMotorID = 19;
+    private static final int kCoralAlgaeRotateMotorID = 20;
 
-    public static int getCoralLauncherRotatingMotorID() {
-        return kCoralLauncherRotatingMotorID;
+    public static int getCoralLanchMotor1ID() {
+        return kCoralLaunchMotor1ID;
     }
 
-    public static int getCoralLauncherLaunchingMotorID() {
-        return kCoralLauncherLaunchingMotorID;
+    public static int getCoralLaunchMotor2ID() {
+        return kCoralLaunchMotor2ID;
     }
 
-    // winch id's
-    private static final int kHangingMotorID = 19;
+    public static int getAlgaeIndexMotorID() {
+        return kAlgaeIndexMotorID;
+    }
 
-    public static int getHangingMotorID() {
-        return kHangingMotorID;
+    public static int getCoralRotateMotorID() {
+        return kCoralAlgaeRotateMotorID;
     }
 
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =

@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.23825,
-        "y": 4.980499999999999
+        "x": 7.576229508196722,
+        "y": 6.17079918032787
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.55875,
-        "y": 3.3522499999999997
+        "x": 7.793290293727836,
+        "y": 6.04676444573866
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.7677499999999995,
-        "y": 6.02375
+        "x": 6.129860886827303,
+        "y": 4.194424402417807
       },
       "prevControl": {
-        "x": 2.2815,
-        "y": 7.301
+        "x": 6.980987936007631,
+        "y": 4.302313746680102
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,7 +31,30 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Elevator Up",
+      "waypointRelativePos": 0.4999999999999984,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Elevator Level 3"
+        }
+      }
+    },
+    {
+      "name": "Launch",
+      "waypointRelativePos": 1.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Launch Coral"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,

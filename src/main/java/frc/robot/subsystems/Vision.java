@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +31,12 @@ import frc.robot.Utils.Units;
 import frc.robot.generated.TunerConstants;
 import frc.robot.RobotContainer;
 
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.Waypoint;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.GoalEndState;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Robot;
@@ -41,6 +49,9 @@ public class Vision extends SubsystemBase {
     private final PhotonPoseEstimator photonEstimator2;
     private final PhotonPoseEstimator photonEstimator3;
     private Matrix<N3, N1> curStdDevs;
+    private final CommandSwerveDrivetrain drivetrain;
+
+    private final PathConstraints pathConstraints = new PathConstraints(RobotContainer.getMaxSpeed(), 1, RobotContainer.getMaxAngularRate(), 1);
 
     // Simulation
     private PhotonCameraSim cameraSim1;
@@ -48,10 +59,12 @@ public class Vision extends SubsystemBase {
     private PhotonCameraSim cameraSim3;
     private VisionSystemSim visionSim;
 
-    public Vision() {
+    public Vision(CommandSwerveDrivetrain drive) {
         camera1 = new PhotonCamera(kCameraName1);
         camera2 = new PhotonCamera(kCameraName2);
         camera3 = new PhotonCamera(kCameraName3);
+
+        drivetrain = drive;
 
         photonEstimator1 =
                 new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam1);
@@ -230,7 +243,7 @@ public class Vision extends SubsystemBase {
     }
 
     // move to the april tag infront of the robot
-    public void moveToClosestAprilTag() {
+    public Command moveToClosestAprilTag() {
         boolean targetVisible = false;
         double targetYaw = 0.0;
         double targetRange = 0.0;
@@ -266,7 +279,20 @@ public class Vision extends SubsystemBase {
             double move = (1 - targetRange) * 10 * RobotContainer.getMaxSpeed(); // shift to be 0.5 meters from the target
 
             // need to send command to drivetrain to move
-            // Pose2d targetPose = new Pose2d()
+            Pose2d currentPose = drivetrain.getState().Pose;
+            Pose2d targetPose = new Pose2d(currentPose.getTranslation().getX() + (move * Math.sin(Units.degreesToRadians(turn))), currentPose.getTranslation().getY() + (move * Math.cos(turn)), currentPose.getRotation().plus(Rotation2d.fromDegrees(turn)));
+
+            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(currentPose, targetPose);
+
+            PathPlannerPath path = new PathPlannerPath(waypoints, pathConstraints, null, new GoalEndState(0, new Rotation2d(0)));
+            path.preventFlipping = true;
+
+            System.out.println(AutoBuilder.isConfigured());
+            drivetrain.configureAutoBuilder();
+            System.out.println(AutoBuilder.isConfigured());
+            return AutoBuilder.followPath(path);
         }
+
+        return Commands.none();
     }
 }

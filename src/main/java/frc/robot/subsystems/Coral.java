@@ -13,95 +13,121 @@ import frc.robot.generated.TunerConstants;
 
 public class Coral extends SubsystemBase {
     private SparkMax rotateMotor;
-    private SparkMax indexMotor;
+    private SparkMax algaeIndexMotor;
+    private SparkMax coralMotor1;
+    private SparkMax coralMotor2;
 
     private RelativeEncoder rotateEncoder;
-    private RelativeEncoder indexEncoder;
+    private RelativeEncoder algaeIndexEncoder;
+    private RelativeEncoder coralEncoder;
 
     private PIDController pidController;
     private boolean locked;
 
     private double currentPos;
+    private double targetPos;
 
     public Coral() {
-        indexMotor = new SparkMax(TunerConstants.getCoralLauncherLaunchingMotorID(), SparkMax.MotorType.kBrushless);
-        rotateMotor = new SparkMax(TunerConstants.getCoralLauncherRotatingMotorID(), SparkMax.MotorType.kBrushless);
+        // initialize motors
+        rotateMotor = new SparkMax(TunerConstants.getCoralRotateMotorID(), SparkMax.MotorType.kBrushless);
+        algaeIndexMotor = new SparkMax(TunerConstants.getAlgaeIndexMotorID(), SparkMax.MotorType.kBrushless);
+        coralMotor1 = new SparkMax(TunerConstants.getCoralLanchMotor1ID(), SparkMax.MotorType.kBrushless);
+        coralMotor2 = new SparkMax(TunerConstants.getCoralLaunchMotor2ID(), SparkMax.MotorType.kBrushless);
 
+        // initialize encoders
         rotateEncoder = rotateMotor.getEncoder();
-        indexEncoder = indexMotor.getEncoder();
+        algaeIndexEncoder = algaeIndexMotor.getEncoder();
+        coralEncoder = coralMotor1.getEncoder();
+
+        // set follower for coral launcher
+        SparkMaxConfig followerConfig = new SparkMaxConfig();
+        followerConfig.follow(coralMotor1, true);
+
+        coralMotor2.configure(followerConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters);
 
         locked = false;
         currentPos = 0;
+        targetPos = 0;
 
         pidController = new PIDController(.05, 0.0, 0.01);
         pidController.setTolerance(0.02); 
     }
 
-    private void indexer(double speed) {
-        indexMotor.set(speed);
-        locked = false;
+    private void launchCoral() {
+        coralMotor1.set(0.5);
+        // try {
+        //     Thread.sleep(1000);
+        //     coralMotor1.set(0);
+        // } catch (InterruptedException e) {
+        //     System.out.println("Wait command for coral launch failed.");
+        //     coralMotor1.set(0);
+        // }
     }
 
-    private void stopRotating() {
-        rotateMotor.set(0);
+    private void intakeAlgae() {
+        algaeIndexMotor.set(-0.5);
     }
 
-    private void stopIndexing() {
-        indexMotor.set(0);
+    private void launchAlgae() {
+        algaeIndexMotor.set(0.5);
     }
 
-    private void rotate(double speed) {
-        rotateMotor.set(speed);
-        locked = false;
-    }
-
-    public InstantCommand indexerCommand(double speed) {
-        return new InstantCommand(() -> indexer(speed));
-    }
-
-    public InstantCommand stopRotatingCommand() {
-        return new InstantCommand(() -> stopRotating());
-    }
-
-    public InstantCommand rotateCommand(double speed) {
-        return new InstantCommand(() -> rotate(speed));
-    }  
-
-    public InstantCommand stopIndexingCommand() {
-        return new InstantCommand(() -> stopIndexing());
-    }
-
-    private void setElevatorPosition(double setPos) {
+    private void setLauncherRotation(double setPos) {
         locked = true;
-        pidController.setSetpoint(currentPos + setPos);
-        currentPos += setPos;
+        targetPos = setPos;
+        pidController.setSetpoint(setPos);
     }
 
-    private void moveElevatorToTarget() {
-        // Calculate the output using the PID controller
+    private void moveLauncherToTarget() {
         double output = pidController.calculate(rotateEncoder.getPosition());
-        output = Math.max(Math.min(output, 0.2), -0.2); // Limit the output to reduce top speed
+        output = Math.max(Math.min(output, 0.2), -0.2);
 
-        // Set the motor power
         rotateMotor.set(output);
 
-        // If at setpoint, stop the motor
         if (pidController.atSetpoint()) {
-            rotateMotor.stopMotor(); // Stop the motor when it reaches the target position
+            rotateMotor.set(0);
         }
     }
 
-    public InstantCommand setCoralCommand(double setPos) {
+    private void stopCoralLaunch() {
+        coralMotor1.set(0);
+    }
+
+    private void stopAlgaeIndex() {
+        algaeIndexMotor.set(0);
+    }
+
+    public InstantCommand launchCoralCommand() {
+        return new InstantCommand(() -> launchCoral());
+    }
+
+    public InstantCommand intakeAlgaeCommand() {
+        return new InstantCommand(() -> intakeAlgae());
+    }
+
+    public InstantCommand launchAlgaeCommand() {
+        return new InstantCommand(() -> launchAlgae());
+    }
+
+    public InstantCommand setLauncherRotationCommand(double setPos) {
         return new InstantCommand(() -> {
-            setElevatorPosition(setPos);
-            moveElevatorToTarget();
+            setLauncherRotation(setPos);
+            moveLauncherToTarget();
         });
+    }
+
+    public InstantCommand stopCoralLaunchCommand() {
+        return new InstantCommand(() -> stopCoralLaunch());
+    }
+
+    public InstantCommand stopAlgaeIndexCommand() {
+        return new InstantCommand(() -> stopAlgaeIndex());
     }
 
     @Override
     public void periodic() {
-        if(locked) {
-            moveElevatorToTarget(); 
+        if (locked) {
+            moveLauncherToTarget();
         }
     }
 }

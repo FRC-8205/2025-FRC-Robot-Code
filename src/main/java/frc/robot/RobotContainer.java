@@ -6,28 +6,51 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.PhotonUtils;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonTrackedTarget;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
-
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 //import edu.wpi.first.math.geometry.Rotation2d;
 //import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.Utils.Units;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Vision;
-//import frc.robot.subsystems.Coral;
-import frc.robot.subsystems.Winch;
+import frc.robot.subsystems.Coral;
+// import frc.robot.subsystems.Winch;
 import frc.robot.subsystems.CustomKeyboard;
+
 
 public class RobotContainer {
     private static double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -57,13 +80,13 @@ public class RobotContainer {
     /* Subsystems */
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    public final Vision vision = new Vision();
+    public final Vision vision = new Vision(drivetrain);
 
     public final Elevator elevator = new Elevator();
 
-    //public final Coral coral = new Coral();
+    public final Coral coral = new Coral();
 
-    public final Winch winch = new Winch();
+    // public final Winch winch = new Winch();
 
     public final CustomKeyboard keyboard = new CustomKeyboard(1);
 
@@ -77,6 +100,11 @@ public class RobotContainer {
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Mode", autoChooser);
        
+        // Register Commands
+        NamedCommands.registerCommand("Elevator Level 3", elevator.setElevatorCommand(16.373));
+        NamedCommands.registerCommand("Launch Coral", coral.launchCoralCommand());
+        NamedCommands.registerCommand("Stop Launch Coral", coral.stopCoralLaunchCommand());
+
         configureBindings();
     }
 
@@ -114,80 +142,30 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         /* DRIVER BUTTONS */
-        // Elevator Down - this is correct
-        // m_driverController.a().onTrue(elevator.moveElevatorUpCommand());
-        // m_driverController.a().onFalse(elevator.stopElevatorCommand());
 
-        // Testing following april tag
-        // m_driverController.x().onTrue(() -> {
-        //     double[] movement = vision.moveToClosestAprilTag();
-            
-        //     if (movement.length == 2) {
-        //         drivetrain.applyRequest(() -> drive.withRotationalRate(movement[0]));
-        //         drivetrain.applyRequest(() -> drive.withVelocityX(movement[1]));
-        //     } else {
-        //         System.out.println("Error with vision estimate");
-        //     }
-            
-        // });
+        // Set elevator to bottom position
+        m_driverController.a().onTrue(elevator.setElevatorCommand(0));
 
-        //Testing Winch
-        m_driverController.a().onTrue(winch.turnInCommand());
-        m_driverController.a().onFalse(winch.stopMotorCommand());
+        // Launch Coral
+        m_driverController.b().onTrue(coral.launchCoralCommand());
+        m_driverController.b().onFalse(coral.stopCoralLaunchCommand());
 
-        //Testing Winch Release
-        m_driverController.b().onTrue(winch.turnOutCommand());
-        m_driverController.b().onFalse(winch.stopMotorCommand());
+        // Intake Algae
+        m_driverController.x().onTrue(coral.intakeAlgaeCommand());
+        m_driverController.x().onFalse(coral.stopAlgaeIndexCommand());
 
-        // Elevator Up - this is correct
-        // m_driverController.b().onTrue(elevator.moveElevatorDownCommand());
-        // m_driverController.b().onFalse(elevator.stopElevatorCommand());
-
-        // Elevator to Level 1 
-        m_driverController.x().onTrue(elevator.setElevatorCommand(10));
-
-        // Elevator to Level 2
-        m_driverController.y().onTrue(elevator.setElevatorCommand(40));
+        // Launch Algae
+        m_driverController.y().onTrue(coral.launchAlgaeCommand());
+        m_driverController.y().onFalse(coral.stopAlgaeIndexCommand());
         
         // Reset Field-Centric Heading 
         m_driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-
-        // WINCH COMMANDS
-        // turn winch in
-        m_driverController.leftTrigger().onTrue(winch.turnInCommand());
-        m_driverController.leftTrigger().onFalse(winch.stopMotorCommand());
-
-        // turn winch out
-        m_driverController.rightTrigger().onTrue(winch.turnOutCommand());
-        m_driverController.rightTrigger().onFalse(winch.stopMotorCommand());
-
         
         // CUSTOM BINDINGS
         keyboard.moveLevel1().onTrue(elevator.setElevatorCommand(1));
         keyboard.moveLevel2().onTrue(elevator.setElevatorCommand(2));
         keyboard.moveLevel3().onTrue(elevator.setElevatorCommand(3));
-        keyboard.moveLevel4().onTrue(elevator.setElevatorCommand(4));
-
-    //     /* CORAL BUTTONS */
-    //     // // Coral Output
-    //     m_driverController.rightBumper().onTrue(coral.indexerCommand(0.1));
-    //     m_driverController.rightBumper().onFalse(coral.stopIndexingCommand());
-
-    //     // Coral Rotate Down
-    //     // m_driverController.rightBumper().onTrue(coral.rotateCommand(0.1));
-    //     // m_driverController.rightBumper().onFalse(coral.stopRotatingCommand());
-
-    //     // Coral Rotate Up 
-    //     m_driverController.leftBumper().onTrue(coral.rotateCommand(-0.1));
-    //     m_driverController.leftBumper().onFalse(coral.stopRotatingCommand());
-
-    //     // Coral Rotate Down PID
-    //     m_driverController.rightTrigger().onTrue(coral.setCoralCommand(2));
-        
-    //     // Coral Rotate Up PID
-    //     m_driverController.leftTrigger().onTrue(coral.setCoralCommand(-2));
-        
-    
+        keyboard.moveLevel4().onTrue(elevator.setElevatorCommand(4));    
     }
 
     public Command getAutonomousCommand() {

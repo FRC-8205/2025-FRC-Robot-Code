@@ -4,7 +4,7 @@ package frc.robot.subsystems;
 //import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.RelativeEncoder;
+import com.revrobotics.AbsoluteEncoder;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,8 +19,7 @@ public class Elevator extends SubsystemBase {
     private SparkMax leftMotor;
     private SparkMax rightMotor;
 
-    private RelativeEncoder leftMotorEncoder;
-    private RelativeEncoder rightMotorEncoder;
+    private AbsoluteEncoder leftMotorEncoder;
     
     private PIDController pidController;
     private boolean locked;
@@ -34,8 +33,7 @@ public class Elevator extends SubsystemBase {
         leftMotor = new SparkMax(TunerConstants.getLeftElevatorMotorID(), SparkMax.MotorType.kBrushless);
         rightMotor = new SparkMax(TunerConstants.getRightElevatorMotorID(), SparkMax.MotorType.kBrushless);
 
-        leftMotorEncoder = leftMotor.getEncoder();
-        rightMotorEncoder = rightMotor.getEncoder();
+        leftMotorEncoder = leftMotor.getAbsoluteEncoder();
 
         throughBoreEncoder = new DutyCycleEncoder(0, 360, 0);
 
@@ -115,17 +113,12 @@ public class Elevator extends SubsystemBase {
         return leftMotorEncoder.getVelocity();
     }
 
-    private double getRightMotorVelocity() {
-        return rightMotorEncoder.getVelocity();
-    }
-
     private double getElevatorBottomHeight() {
         return leftMotorEncoder.getPosition() / TunerConstants.getElevatorGearRatio() * TunerConstants.getElevatorSproketCircumference();
     }
 
     private void configureDashboard() {
-        SmartDashboard.putNumber("Elevator Left Motor Velocity", getLeftMotorVelocity());
-        SmartDashboard.putNumber("Elevator Right Motor Velocity", getRightMotorVelocity());
+        SmartDashboard.putNumber("Elevator Motor Velocity", getLeftMotorVelocity());
 
         SmartDashboard.putNumber("Elevator Left Motor Current", leftMotor.getOutputCurrent());
         SmartDashboard.putNumber("Elevator Right Motor Current", rightMotor.getOutputCurrent());

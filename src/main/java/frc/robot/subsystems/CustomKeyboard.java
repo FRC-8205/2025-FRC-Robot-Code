@@ -1,15 +1,15 @@
 package frc.robot.subsystems;
 
-import java.nio.channels.NonWritableChannelException;
-
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 
 
-public class CustomKeyboard {
+public class CustomKeyboard extends CommandGenericHID{
     private final Joystick keyboard;
 
     public CustomKeyboard(int port) {
+        super(port);
         keyboard = new Joystick(port);
     }
 
