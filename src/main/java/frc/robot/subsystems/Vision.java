@@ -243,12 +243,13 @@ public class Vision extends SubsystemBase {
     }
 
     // move to the april tag infront of the robot
-    public Command moveToClosestAprilTag(int fiducialID) {
+    public PathPlannerPath moveToClosestAprilTag(int fiducialID) {
         boolean targetVisible = false;
         double targetYaw = 0.0;
         double targetRange = 0.0;
         // only uses BOB camera
         var results = camera1.getAllUnreadResults();
+        PathPlannerPath path = null;
 
         if (!results.isEmpty()) {
             // Camera processed a new frame since last
@@ -284,15 +285,9 @@ public class Vision extends SubsystemBase {
 
             List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(currentPose, targetPose);
 
-            PathPlannerPath path = new PathPlannerPath(waypoints, pathConstraints, null, new GoalEndState(0, new Rotation2d(0)));
+            path = new PathPlannerPath(waypoints, pathConstraints, null, new GoalEndState(0, new Rotation2d(0)));
             path.preventFlipping = true;
-
-            System.out.println(AutoBuilder.isConfigured());
-            drivetrain.configureAutoBuilder();
-            System.out.println(AutoBuilder.isConfigured());
-            return AutoBuilder.followPath(path);
         }
-
-        return Commands.none();
+        return path;
     }
 }

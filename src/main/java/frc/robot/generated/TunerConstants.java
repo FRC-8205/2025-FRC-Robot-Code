@@ -344,6 +344,14 @@ public class TunerConstants {
         return kCoralAlgaeRotateMotorID;
     }
 
+    // motor id's for funnel
+
+    private static final int kFunnelMotorID = 21;
+
+    public static int getFunnelMotorID() {
+        return kFunnelMotorID;
+    }
+
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(
             kFrontLeftSteerMotorId, kFrontLeftDriveMotorId, kFrontLeftEncoderId, kFrontLeftEncoderOffset,

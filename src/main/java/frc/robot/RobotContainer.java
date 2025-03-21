@@ -49,6 +49,7 @@ import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Coral;
 // import frc.robot.subsystems.Winch;
+import frc.robot.subsystems.Funnel;
 import frc.robot.subsystems.CustomKeyboard;
 
 
@@ -89,6 +90,8 @@ public class RobotContainer {
     // public final Winch winch = new Winch();
 
     public final CustomKeyboard keyboard = new CustomKeyboard(1);
+
+    public final Funnel funnel = new Funnel();
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
@@ -150,7 +153,7 @@ public class RobotContainer {
         m_driverController.b().onTrue(coral.launchCoralCommand());
         m_driverController.b().onFalse(coral.stopCoralLaunchCommand());
 
-        // Intake Algae
+        // Intake Algae - swap
         m_driverController.x().onTrue(coral.intakeAlgaeCommand());
         m_driverController.x().onFalse(coral.stopAlgaeIndexCommand());
 
@@ -159,7 +162,24 @@ public class RobotContainer {
         m_driverController.y().onFalse(coral.stopAlgaeIndexCommand());
         
         // Reset Field-Centric Heading 
-        m_driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        // m_driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+
+        // Move to April Tag 10
+        // m_driverController.rightBumper().onTrue(AutoBuilder.followPath(vision.moveToClosestAprilTag(10)));
+
+        // rotate coral arm out
+        m_driverController.leftBumper().onTrue(coral.setLauncherRotationCommand(.2));
+
+        // rotate coral arm to vertical
+        m_driverController.rightBumper().onTrue(coral.setLauncherRotationCommand(.418));
+
+        // Rotate funnel up
+        m_driverController.rightTrigger().onTrue(funnel.rotateUpCommand());
+        m_driverController.rightTrigger().onFalse(funnel.stopRotatingCommand());
+
+        // Rotate funnel down
+        m_driverController.leftTrigger().onTrue(funnel.rotateDownCommand());
+        m_driverController.leftTrigger().onFalse(funnel.stopRotatingCommand());
         
         // CUSTOM BINDINGS
         keyboard.moveLevel1().onTrue(elevator.setElevatorCommand(1));

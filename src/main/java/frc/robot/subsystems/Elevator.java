@@ -26,7 +26,9 @@ public class Elevator extends SubsystemBase {
 
     private double targetPosition;
 
-    private DutyCycleEncoder throughBoreEncoder;
+
+    private double lastEncoderPosition;
+    private int rotationCount;
 
 
     public Elevator() {
@@ -34,8 +36,6 @@ public class Elevator extends SubsystemBase {
         rightMotor = new SparkMax(TunerConstants.getRightElevatorMotorID(), SparkMax.MotorType.kBrushless);
 
         leftMotorEncoder = leftMotor.getAbsoluteEncoder();
-
-        throughBoreEncoder = new DutyCycleEncoder(0, 360, 0);
 
         locked = false;
 
@@ -70,10 +70,29 @@ public class Elevator extends SubsystemBase {
         pidController.setSetpoint(setPos);
     }
 
+    private double getElevatorContinuousEncoderPosition() {
+        double currentRawPosition = leftMotorEncoder.getPosition(); // Get absolute encoder value (0 to 1)
+        
+        // Check for wrap-around conditions
+        if (currentRawPosition - lastEncoderPosition > 0.5) {
+            // Encoder jumped backward (e.g., from 0.99 to 0.01), decrease rotation count
+            rotationCount--;
+        } else if (currentRawPosition - lastEncoderPosition < -0.5) {
+            // Encoder jumped forward (e.g., from 0.01 to 0.99), increase rotation count
+            rotationCount++;
+        }
+    
+        // Update last position
+        lastEncoderPosition = currentRawPosition;
+    
+        // Compute continuous position
+        return rotationCount + currentRawPosition;
+    }    
+
     // Move the elevator towards the target position using the PID controller
     private void moveElevatorToTarget() {
         // Calculate the output using the PID controller
-        double output = pidController.calculate(leftMotorEncoder.getPosition());
+        double output = pidController.calculate(getElevatorContinuousEncoderPosition());
         output = Math.max(Math.min(output, 0.2), -0.2); // Limit the output to reduce top speed
 
         // Set the motor power
@@ -114,7 +133,7 @@ public class Elevator extends SubsystemBase {
     }
 
     private double getElevatorBottomHeight() {
-        return leftMotorEncoder.getPosition() / TunerConstants.getElevatorGearRatio() * TunerConstants.getElevatorSproketCircumference();
+        return getElevatorContinuousEncoderPosition() / TunerConstants.getElevatorGearRatio() * TunerConstants.getElevatorSproketCircumference();
     }
 
     private void configureDashboard() {
@@ -126,13 +145,11 @@ public class Elevator extends SubsystemBase {
         SmartDashboard.putNumber("Elevator Left Motor Bus Voltage", leftMotor.getBusVoltage());
         SmartDashboard.putNumber("Elevator Right Motor Bus Voltage", rightMotor.getBusVoltage());
 
-        SmartDashboard.putNumber("Encoder Position", leftMotorEncoder.getPosition());
+        SmartDashboard.putNumber("Elevator Encoder Position", getElevatorContinuousEncoderPosition());
 
         SmartDashboard.putNumber("Elevator Height", getElevatorBottomHeight());
 
         SmartDashboard.putNumber("Target Position", targetPosition);
-
-        SmartDashboard.putNumber("Through Bore Encoder", throughBoreEncoder.get());
 
     }
 
