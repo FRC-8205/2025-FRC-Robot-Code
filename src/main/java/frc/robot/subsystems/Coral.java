@@ -9,6 +9,7 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import frc.robot.generated.TunerConstants;
@@ -25,12 +26,13 @@ public class Coral extends SubsystemBase {
 
     private PIDController pidControllerRotate;
 
-    private double currentPos;
+    private final ArmFeedforward armFeedforward;
+
     private double targetPos;
+    private final double rotatePosOffset;
 
     private double lastEncoderPosition = 0.0;
     private int rotationCount = 0;
-    
 
     public Coral() {
         // initialize motors
@@ -51,27 +53,23 @@ public class Coral extends SubsystemBase {
         SparkMaxConfig rotateConfig = new SparkMaxConfig();
         rotateConfig.idleMode(IdleMode.kBrake);
     
-
         rotateMotor.configure(rotateConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters);
-
         coralMotor2.configure(followerConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters);
-;
-        currentPos = 0;
-        targetPos = 0.418;
 
-        pidControllerRotate = new PIDController(.5, 0.0, 0.00);
-        pidControllerRotate.setTolerance(0.02); 
+        // Set initial target position (in rotations)
+        targetPos = 0.418;
+        rotatePosOffset = 0.418;
+
+        // Initialize PID controller (tune gains as necessary)
+        pidControllerRotate = new PIDController(0.5, 0.0, 0.1);
+        pidControllerRotate.setTolerance(0.02);
+        pidControllerRotate.setSetpoint(targetPos);
+
+        armFeedforward = new ArmFeedforward(.1, 1.0, .0);
     }
 
     private void launchCoral() {
         coralMotor1.set(0.5);
-        // try {
-        //     Thread.sleep(1000);
-        //     coralMotor1.set(0);
-        // } catch (InterruptedException e) {
-        //     System.out.println("Wait command for coral launch failed.");
-        //     coralMotor1.set(0);
-        // }
     }
 
     private void intakeAlgae() {
@@ -83,21 +81,16 @@ public class Coral extends SubsystemBase {
     }
 
     private double getRotateContinuousEncoderPosition() {
-        double currentRawPosition = rotateEncoder.getPosition(); // Get absolute encoder value (0 to 1)
-        
+        double currentRawPosition = rotateEncoder.getPosition(); // 0 to 1 range
+
         // Check for wrap-around conditions
         if (currentRawPosition - lastEncoderPosition > 0.5) {
-            // Encoder jumped backward (e.g., from 0.99 to 0.01), decrease rotation count
             rotationCount--;
         } else if (currentRawPosition - lastEncoderPosition < -0.5) {
-            // Encoder jumped forward (e.g., from 0.01 to 0.99), increase rotation count
             rotationCount++;
         }
     
-        // Update last position
         lastEncoderPosition = currentRawPosition;
-    
-        // Compute continuous position
         return rotationCount + currentRawPosition;
     }
 
@@ -106,15 +99,17 @@ public class Coral extends SubsystemBase {
         pidControllerRotate.setSetpoint(setPos);
     }
 
-    private void moveLauncherToTarget() {
-        double output = pidControllerRotate.calculate(getRotateContinuousEncoderPosition());
-        //output = Math.max(Math.min(output, 0.1), -0.1);
-
-        rotateMotor.set(output);
-
-        if (pidControllerRotate.atSetpoint()) {
-            rotateMotor.set(0);
-        }
+    private void moveLauncherToTarget(double currentPos) {
+        double pidOutput = pidControllerRotate.calculate(currentPos);
+        double angleRadians = (currentPos - rotatePosOffset) * 2.0 * Math.PI;
+        double feedforwardOutput = armFeedforward.calculate(angleRadians, 0);
+        double output = pidOutput + feedforwardOutput;
+        
+        rotateMotor.setVoltage(output);
+        
+        SmartDashboard.putNumber("Arm PID Output", pidOutput);
+        SmartDashboard.putNumber("Arm Feedforward Output", feedforwardOutput);
+        SmartDashboard.putNumber("Arm Motor Output", output);
     }
 
     private void stopCoralLaunch() {
@@ -138,10 +133,7 @@ public class Coral extends SubsystemBase {
     }
 
     public InstantCommand setLauncherRotationCommand(double setPos) {
-        return new InstantCommand(() -> {
-            setLauncherRotation(setPos);
-            moveLauncherToTarget();
-        });
+        return new InstantCommand(() -> setLauncherRotation(setPos));
     }
 
     public InstantCommand stopCoralLaunchCommand() {
@@ -152,15 +144,15 @@ public class Coral extends SubsystemBase {
         return new InstantCommand(() -> stopAlgaeIndex());
     }
 
-    private void configureDashboard() {
-        SmartDashboard.putNumber("Arm Rotate Encoder Position", getRotateContinuousEncoderPosition());
+    private void configureDashboard(double currentPos) {
+        SmartDashboard.putNumber("Arm Rotate Encoder Position", currentPos);
     }
-
 
     @Override
     public void periodic() {
-            moveLauncherToTarget();
-
-        configureDashboard();
+        // Cache the current encoder reading once per cycle.
+        double continuousPosition = getRotateContinuousEncoderPosition();
+        moveLauncherToTarget(continuousPosition);
+        configureDashboard(continuousPosition);
     }
 }
