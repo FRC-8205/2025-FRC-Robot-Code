@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static frc.robot.generated.TunerConstants.Vision.*;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -42,14 +43,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 
 public class Vision extends SubsystemBase {
-    private final PhotonCamera camera1;
-    private final PhotonCamera camera2;
-    private final PhotonCamera camera3;
-    private final PhotonPoseEstimator photonEstimator1;
-    private final PhotonPoseEstimator photonEstimator2;
-    private final PhotonPoseEstimator photonEstimator3;
+    private final PhotonCamera aprilTagCameraFront;
+    private final PhotonCamera aprilTagCameraBack;
+    private final PhotonCamera driverCam;
+    private final PhotonPoseEstimator photonEstimatorFront;
+    private final PhotonPoseEstimator photonEstimatorBack;
+
     private Matrix<N3, N1> curStdDevs;
-    private final CommandSwerveDrivetrain drivetrain;
 
     private final PathConstraints pathConstraints = new PathConstraints(RobotContainer.getMaxSpeed(), 1, RobotContainer.getMaxAngularRate(), 1);
 
@@ -59,24 +59,35 @@ public class Vision extends SubsystemBase {
     private PhotonCameraSim cameraSim3;
     private VisionSystemSim visionSim;
 
-    public Vision(CommandSwerveDrivetrain drive) {
-        camera1 = new PhotonCamera(kCameraName1);
-        camera2 = new PhotonCamera(kCameraName2);
-        camera3 = new PhotonCamera(kCameraName3);
+    public Vision() {
+        aprilTagCameraFront = new PhotonCamera(kCameraNameFront);
+        aprilTagCameraBack = new PhotonCamera(kCameraNameBack);
+        driverCam = new PhotonCamera(kCameraNameDriver);
 
-        drivetrain = drive;
+        TunerConstants.Vision.kTagLayout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
 
-        photonEstimator1 =
+ 
+
+        photonEstimatorFront =
                 new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam1);
-        photonEstimator1.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        photonEstimatorFront.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
-        photonEstimator2 =
+        photonEstimatorBack =
                 new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam2);
-        photonEstimator2.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        photonEstimatorBack.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
-        photonEstimator3 =
-                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam3);
-        photonEstimator3.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        photonEstimatorFront.setLastPose(
+                Robot.getAlliance()
+                        ? TunerConstants.Vision.startingPoseRed
+                        : TunerConstants.Vision.startingPoseBlue);
+        photonEstimatorBack.setLastPose(
+                Robot.getAlliance()
+                        ? TunerConstants.Vision.startingPoseRed
+                        : TunerConstants.Vision.startingPoseBlue);
+        
+                        
+
+                        
 
         // ----- Simulation
         if (Robot.isSimulation()) {
@@ -92,9 +103,9 @@ public class Vision extends SubsystemBase {
             cameraProp.setAvgLatencyMs(50);
             cameraProp.setLatencyStdDevMs(15);
             // Create PhotonCameraSim instances which will update the linked PhotonCamera's values with visible targets.
-            cameraSim1 = new PhotonCameraSim(camera1, cameraProp);
-            cameraSim2 = new PhotonCameraSim(camera2, cameraProp);
-            cameraSim3 = new PhotonCameraSim(camera3, cameraProp);
+            cameraSim1 = new PhotonCameraSim(aprilTagCameraFront, cameraProp);
+            cameraSim2 = new PhotonCameraSim(aprilTagCameraBack, cameraProp);
+            cameraSim3 = new PhotonCameraSim(driverCam, cameraProp);
             // Add the simulated cameras to view the targets on this simulated field.
             visionSim.addCamera(cameraSim1, kRobotToCam1);
             visionSim.addCamera(cameraSim2, kRobotToCam2);
@@ -118,8 +129,8 @@ public class Vision extends SubsystemBase {
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        for (var change : camera1.getAllUnreadResults()) {
-            visionEst = photonEstimator1.update(change);
+        for (var change : aprilTagCameraFront.getAllUnreadResults()) {
+            visionEst = photonEstimatorFront.update(change);
             updateEstimationStdDevs(visionEst, change.getTargets());
 
             if (Robot.isSimulation()) {
@@ -133,23 +144,8 @@ public class Vision extends SubsystemBase {
                         });
             }
         }
-        for (var change : camera2.getAllUnreadResults()) {
-            visionEst = photonEstimator2.update(change);
-            updateEstimationStdDevs(visionEst, change.getTargets());
-
-            if (Robot.isSimulation()) {
-                visionEst.ifPresentOrElse(
-                        est ->
-                                getSimDebugField()
-                                        .getObject("VisionEstimation")
-                                        .setPose(est.estimatedPose.toPose2d()),
-                        () -> {
-                            getSimDebugField().getObject("VisionEstimation").setPoses();
-                        });
-            }
-        }
-        for (var change : camera3.getAllUnreadResults()) {
-            visionEst = photonEstimator3.update(change);
+        for (var change : aprilTagCameraBack.getAllUnreadResults()) {
+            visionEst = photonEstimatorBack.update(change);
             updateEstimationStdDevs(visionEst, change.getTargets());
 
             if (Robot.isSimulation()) {
@@ -165,6 +161,8 @@ public class Vision extends SubsystemBase {
         }
         return visionEst;
     }
+
+    
 
     /**
      * Calculates new standard deviations This algorithm is a heuristic that creates dynamic standard
@@ -187,7 +185,7 @@ public class Vision extends SubsystemBase {
 
             // Precalculation - see how many tags we found, and calculate an average-distance metric
             for (var tgt : targets) {
-                var tagPose = photonEstimator1.getFieldTags().getTagPose(tgt.getFiducialId());
+                var tagPose = photonEstimatorFront.getFieldTags().getTagPose(tgt.getFiducialId());
                 if (tagPose.isEmpty()) continue;
                 numTags++;
                 avgDist +=
@@ -242,52 +240,4 @@ public class Vision extends SubsystemBase {
         return visionSim.getDebugField();
     }
 
-    // move to the april tag infront of the robot
-    public PathPlannerPath moveToClosestAprilTag(int fiducialID) {
-        boolean targetVisible = false;
-        double targetYaw = 0.0;
-        double targetRange = 0.0;
-        // only uses BOB camera
-        var results = camera1.getAllUnreadResults();
-        PathPlannerPath path = null;
-
-        if (!results.isEmpty()) {
-            // Camera processed a new frame since last
-            // Get the last one in the list.
-            var result = results.get(results.size() - 1);
-            if (result.hasTargets()) {
-                // At least one AprilTag was seen by the camera
-                for (var target : result.getTargets()) {
-                    if (target.getFiducialId() == fiducialID) {
-                        // Found Tag 10, record its information
-                        targetYaw = target.getYaw();
-                        targetRange =
-                                PhotonUtils.calculateDistanceToTargetMeters(
-                                        0.188339772418, // Measured with a tape measure, or in CAD.
-                                        0.22225, // From 2024 game manual for ID 7
-                                        Units.degreesToRadians(-15.0), // Measured with a protractor, or in CAD.
-                                        Units.degreesToRadians(target.getPitch()));
-
-                        targetVisible = true;
-                    }
-                }
-            }
-        }
-
-        if (targetVisible) {
-            // move the robot to the target
-            double turn = -targetYaw * 7 * RobotContainer.getMaxAngularRate(); // in degrees I think
-            double move = (1 - targetRange) * 10 * RobotContainer.getMaxSpeed(); // shift to be 0.5 meters from the target
-
-            // need to send command to drivetrain to move
-            Pose2d currentPose = drivetrain.getState().Pose;
-            Pose2d targetPose = new Pose2d(currentPose.getTranslation().getX() + (move * Math.sin(Units.degreesToRadians(turn))), currentPose.getTranslation().getY() + (move * Math.cos(turn)), currentPose.getRotation().plus(Rotation2d.fromDegrees(turn)));
-
-            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(currentPose, targetPose);
-
-            path = new PathPlannerPath(waypoints, pathConstraints, null, new GoalEndState(0, new Rotation2d(0)));
-            path.preventFlipping = true;
-        }
-        return path;
-    }
 }

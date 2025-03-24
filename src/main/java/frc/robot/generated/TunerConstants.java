@@ -8,11 +8,14 @@ import com.ctre.phoenix6.hardware.*;
 import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
+import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -26,9 +29,9 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class TunerConstants {
     // Constants for the camera setup
     public static class Vision {
-        public static final String kCameraName1 = "BOB_OV9281";
-        public static final String kCameraName2 = "Sharon";
-        public static final String kCameraName3 = "Derik";
+        public static final String kCameraNameFront = "BOB_OV9281";
+        public static final String kCameraNameBack = "Sharon";
+        public static final String kCameraNameDriver = "Derik";
 
         // TODO: change default values
         // where the cameras are
@@ -40,9 +43,12 @@ public class TunerConstants {
         public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
         // error correction values
-        // TODO: tweak to fit robot
-        public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
-        public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+        public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(4, 4, 20);
+        public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1, 1, 999);
+
+        public static final Pose2d startingPoseBlue = new Pose2d(1.35, 5.55, new Rotation2d(0));
+        public static final Pose2d startingPoseRed =
+                new Pose2d(15.19, 5.55, new Rotation2d(Math.PI));
 
     }
     // Both sets of gains need to be tuned to your individual robot.
@@ -464,5 +470,22 @@ public class TunerConstants {
                 odometryStandardDeviation, visionStandardDeviation, modules
             );
         }
+    }
+    
+    public static final class Auto {
+        public static final double kMaxSpeedMetersPerSecond = 2.5;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 3;
+        public static final double kMaxAngularSpeedRadiansPerSecond = 9.424778;
+        public static final double kMaxAngularSpeedRadiansPerSecondSquared = 12.56637;
+
+        public static final double kPXController = 1;
+        public static final double kPYController = 1;
+        public static final double kPThetaController = 1;
+
+        public static final PathConstraints PathfindingConstraints = new PathConstraints(
+                kMaxSpeedMetersPerSecond,
+                kMaxAccelerationMetersPerSecondSquared,
+                kMaxAngularSpeedRadiansPerSecond,
+                kMaxAngularSpeedRadiansPerSecondSquared);
     }
 }

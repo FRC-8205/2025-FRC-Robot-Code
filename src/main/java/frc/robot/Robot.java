@@ -59,17 +59,12 @@ public class Robot extends TimedRobot {
 
     // Correct pose estimate with vision measurements
     var visionEst = m_robotContainer.vision.getEstimatedGlobalPose();
-    visionEst.ifPresent(
-      est -> {
-        // Change our trust in the measurement based on the tags we can see
+    visionEst.ifPresent(est -> {
         var estStdDevs = m_robotContainer.vision.getEstimationStdDevs();
-    
         m_robotContainer.drivetrain.addVisionMeasurement(
-        est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
-
-        SmartDashboard.putNumber("Vistion Estimate X", est.estimatedPose.toPose2d().getX());
-        SmartDashboard.putNumber("Vision Estimate Y", est.estimatedPose.toPose2d().getY());
-      });
+            est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs
+        );
+    });
 
     matchTime = getMatchTime();  
     // Prevent showing -1 when disabled

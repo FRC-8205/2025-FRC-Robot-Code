@@ -84,7 +84,7 @@ public class RobotContainer {
     /* Subsystems */
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    public final Vision vision = new Vision(drivetrain);
+    public final Vision vision = new Vision();
 
     // public final Elevator elevator = new Elevator();
 
