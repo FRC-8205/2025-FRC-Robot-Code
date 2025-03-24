@@ -21,6 +21,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.controls.CoastOut;
+import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -39,17 +40,19 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Utils.Units;
+import frc.robot.Utils.ChangeVariableCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Coral;
 // import frc.robot.subsystems.Winch;
-import frc.robot.subsystems.Funnel;
+// import frc.robot.subsystems.Funnel;
 import frc.robot.subsystems.CustomKeyboard;
 
 
@@ -83,15 +86,17 @@ public class RobotContainer {
 
     public final Vision vision = new Vision(drivetrain);
 
-    public final Elevator elevator = new Elevator();
+    // public final Elevator elevator = new Elevator();
 
-    public final Coral coral = new Coral();
+    // public final Coral coral = new Coral();
 
     // public final Winch winch = new Winch();
 
     public final CustomKeyboard keyboard = new CustomKeyboard(1);
 
-    public final Funnel funnel = new Funnel();
+    // public final Funnel funnel = new Funnel();
+
+    private final double swerveSpeed = 1;
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
@@ -104,9 +109,9 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Mode", autoChooser);
        
         // Register Commands
-        NamedCommands.registerCommand("Elevator Level 3", elevator.setElevatorCommand(16.373));
-        NamedCommands.registerCommand("Launch Coral", coral.launchCoralCommand());
-        NamedCommands.registerCommand("Stop Launch Coral", coral.stopCoralLaunchCommand());
+        // NamedCommands.registerCommand("Elevator Level 3", elevator.setElevatorCommand(16.373));
+        // NamedCommands.registerCommand("Launch Coral", coral.launchCoralCommand());
+        // NamedCommands.registerCommand("Stop Launch Coral", coral.stopCoralLaunchCommand());
 
         configureBindings();
     }
@@ -117,9 +122,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-m_driverController.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-m_driverController.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-m_driverController.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-m_driverController.getLeftY() * MaxSpeed * swerveSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-m_driverController.getLeftX() * MaxSpeed * swerveSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-m_driverController.getRightX() * MaxAngularRate * swerveSpeed) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -128,12 +133,16 @@ public class RobotContainer {
         //     point.withModuleDirection(new Rotation2d(-m_driverController.getLeftY(), -m_driverController.getLeftX()))
         // ));
 
-        m_driverController.pov(0).whileTrue(drivetrain.applyRequest(() ->
-            forwardStraight.withVelocityX(0.5).withVelocityY(0))
-        );
-        m_driverController.pov(180).whileTrue(drivetrain.applyRequest(() ->
-            forwardStraight.withVelocityX(-0.5).withVelocityY(0))
-        );
+        // m_driverController.pov(0).whileTrue(drivetrain.applyRequest(() ->
+        //     forwardStraight.withVelocityX(0.5).withVelocityY(0))
+        // );
+        // m_driverController.pov(180).whileTrue(drivetrain.applyRequest(() ->
+        //     forwardStraight.withVelocityX(-0.5).withVelocityY(0))
+        // );
+
+        m_driverController.a().onTrue(new InstantCommand(
+          ()->drivetrain.resetRotation(new Rotation2d(0))
+        ));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -145,52 +154,52 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         /* DRIVER BUTTONS */
+        /*
+         * Needed Buttons:
+         * Moving to elevator to all 4 levels and bottom (5 buttons) done
+         * Launching and intake of algae (2 buttons) done
+         * Intake and outtake of coral (2 buttons) done
+         * Rotating launcher to vertical and 35 degrees (2 buttons) done
+         * Button to make swerve drive slower (1 button)
+         */
+        // Moving elevator to levels 1, 2, 3, and 4
+        // m_driverController.povUp().onTrue(elevator.setElevatorCommand(6.142879486083984));
+        // m_driverController.povRight().onTrue(elevator.setElevatorCommand(16.071365356445312));
+        // m_driverController.povDown().onTrue(elevator.setElevatorCommand(24.1385));
+        // m_driverController.povLeft().onTrue(elevator.setElevatorCommand(24.754));   
 
-        // Set elevator to bottom position
-        m_driverController.a().onTrue(elevator.setElevatorCommand(0));
+        // // Moving elevator to bottom
+        // m_driverController.leftTrigger().onTrue(elevator.setElevatorCommand(0));
 
-        // Launch Coral
-        m_driverController.b().onTrue(coral.launchCoralCommand());
-        m_driverController.b().onFalse(coral.stopCoralLaunchCommand());
+        // // Launching coral
+        // m_driverController.b().onTrue(coral.launchCoralCommand());
+        // m_driverController.b().onFalse(coral.stopCoralLaunchCommand());
 
-        // Intake Algae - swap
-        m_driverController.x().onTrue(coral.intakeAlgaeCommand());
-        m_driverController.x().onFalse(coral.stopAlgaeIndexCommand());
+        // // Moving coral back
+        // m_driverController.a().onTrue(coral.loseCoralCommand());
+        // m_driverController.a().onFalse(coral.stopCoralLaunchCommand());
 
-        // Launch Algae
-        m_driverController.y().onTrue(coral.launchAlgaeCommand());
-        m_driverController.y().onFalse(coral.stopAlgaeIndexCommand());
-        
-        // Reset Field-Centric Heading 
-        // m_driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        // // Launching algae
+        // m_driverController.x().onTrue(coral.launchAlgaeCommand());
+        // m_driverController.x().onFalse(coral.stopAlgaeIndexCommand());
 
-        // Move to April Tag 10
-        // m_driverController.rightBumper().onTrue(AutoBuilder.followPath(vision.moveToClosestAprilTag(10)));
+        // // Intake algae
+        // m_driverController.y().onTrue(coral.intakeAlgaeCommand());
+        // m_driverController.y().onFalse(coral.stopAlgaeIndexCommand());
 
-        // rotate coral arm out
-        m_driverController.leftBumper().onTrue(coral.setLauncherRotationCommand(.2));
+        // // Setting arm to vertical
+        // m_driverController.leftBumper().onTrue(coral.setLauncherRotationCommand(-0.3));
 
-        // rotate coral arm to vertical
-        m_driverController.rightBumper().onTrue(coral.setLauncherRotationCommand(.418));
+        // // Setting arm to rotation for levels 1, 2, and 3
+        // m_driverController.rightBumper().onTrue(coral.setLauncherRotationCommand(-5.499996185302734));
 
-        // Rotate funnel up
-        m_driverController.rightTrigger().onTrue(funnel.rotateUpCommand());
-        m_driverController.rightTrigger().onFalse(funnel.stopRotatingCommand());
-
-        // Rotate funnel down
-        m_driverController.leftTrigger().onTrue(funnel.rotateDownCommand());
-        m_driverController.leftTrigger().onFalse(funnel.stopRotatingCommand());
-        
-        // CUSTOM BINDINGS
-        keyboard.moveLevel1().onTrue(elevator.setElevatorCommand(1));
-        keyboard.moveLevel2().onTrue(elevator.setElevatorCommand(2));
-        keyboard.moveLevel3().onTrue(elevator.setElevatorCommand(3));
-        keyboard.moveLevel4().onTrue(elevator.setElevatorCommand(4));    
+        // Making swerve drive slower
+        ChangeVariableCommand<Double> changeCommand = new ChangeVariableCommand<Double>((Double) swerveSpeed, new Double[] {1.0, 0.5});
+        m_driverController.rightTrigger().onTrue(changeCommand);
     }
 
     public Command getAutonomousCommand() {
         /* Run the path selected from the auto chooser */
         return autoChooser.getSelected();
     }
-
 }

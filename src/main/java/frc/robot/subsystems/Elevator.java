@@ -4,7 +4,7 @@ package frc.robot.subsystems;
 //import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,7 +19,7 @@ public class Elevator extends SubsystemBase {
     private SparkMax leftMotor;
     private SparkMax rightMotor;
 
-    private AbsoluteEncoder leftMotorEncoder;
+    private RelativeEncoder leftMotorEncoder;
     
     private PIDController pidController;
     private boolean locked;
@@ -34,8 +34,8 @@ public class Elevator extends SubsystemBase {
     public Elevator() {
         leftMotor = new SparkMax(TunerConstants.getLeftElevatorMotorID(), SparkMax.MotorType.kBrushless);
         rightMotor = new SparkMax(TunerConstants.getRightElevatorMotorID(), SparkMax.MotorType.kBrushless);
-
-        leftMotorEncoder = leftMotor.getAbsoluteEncoder();
+        
+        leftMotorEncoder = leftMotor.getEncoder();
 
         locked = false;
 
@@ -54,13 +54,13 @@ public class Elevator extends SubsystemBase {
     private void moveElevatorUp() {
         // speed is a value between -1 and 1
         locked = false;
-        leftMotor.set(-0.1);
+        leftMotor.set(-0.3);
     }
 
     private void moveElevatorDown() {
         // speed is a value between -1 and 1
         locked = false;
-        leftMotor.set(0.1);
+        leftMotor.set(0.3);
     }
 
     // Set the target position for the elevator
