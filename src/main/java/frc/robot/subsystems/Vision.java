@@ -44,7 +44,7 @@ import frc.robot.Robot;
 
 public class Vision extends SubsystemBase {
     private final PhotonCamera aprilTagCameraFront;
-    private final PhotonCamera aprilTagCameraBack;
+    //private final PhotonCamera aprilTagCameraBack;
     private final PhotonCamera driverCam;
     private final PhotonPoseEstimator photonEstimatorFront;
     private final PhotonPoseEstimator photonEstimatorBack;
@@ -61,7 +61,7 @@ public class Vision extends SubsystemBase {
 
     public Vision() {
         aprilTagCameraFront = new PhotonCamera(kCameraNameFront);
-        aprilTagCameraBack = new PhotonCamera(kCameraNameBack);
+        // aprilTagCameraBack = new PhotonCamera(kCameraNameBack);
         driverCam = new PhotonCamera(kCameraNameDriver);
 
         TunerConstants.Vision.kTagLayout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
@@ -104,7 +104,7 @@ public class Vision extends SubsystemBase {
             cameraProp.setLatencyStdDevMs(15);
             // Create PhotonCameraSim instances which will update the linked PhotonCamera's values with visible targets.
             cameraSim1 = new PhotonCameraSim(aprilTagCameraFront, cameraProp);
-            cameraSim2 = new PhotonCameraSim(aprilTagCameraBack, cameraProp);
+            // cameraSim2 = new PhotonCameraSim(aprilTagCameraBack, cameraProp);
             cameraSim3 = new PhotonCameraSim(driverCam, cameraProp);
             // Add the simulated cameras to view the targets on this simulated field.
             visionSim.addCamera(cameraSim1, kRobotToCam1);
@@ -144,21 +144,21 @@ public class Vision extends SubsystemBase {
                         });
             }
         }
-        for (var change : aprilTagCameraBack.getAllUnreadResults()) {
-            visionEst = photonEstimatorBack.update(change);
-            updateEstimationStdDevs(visionEst, change.getTargets());
+        // for (var change : aprilTagCameraBack.getAllUnreadResults()) {
+        //     visionEst = photonEstimatorBack.update(change);
+        //     updateEstimationStdDevs(visionEst, change.getTargets());
 
-            if (Robot.isSimulation()) {
-                visionEst.ifPresentOrElse(
-                        est ->
-                                getSimDebugField()
-                                        .getObject("VisionEstimation")
-                                        .setPose(est.estimatedPose.toPose2d()),
-                        () -> {
-                            getSimDebugField().getObject("VisionEstimation").setPoses();
-                        });
-            }
-        }
+        //     if (Robot.isSimulation()) {
+        //         visionEst.ifPresentOrElse(
+        //                 est ->
+        //                         getSimDebugField()
+        //                                 .getObject("VisionEstimation")
+        //                                 .setPose(est.estimatedPose.toPose2d()),
+        //                 () -> {
+        //                     getSimDebugField().getObject("VisionEstimation").setPoses();
+        //                 });
+        //     }
+        // }
         return visionEst;
     }
 

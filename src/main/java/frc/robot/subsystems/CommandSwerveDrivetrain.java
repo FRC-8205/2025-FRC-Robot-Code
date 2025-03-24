@@ -298,6 +298,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     // Pathfinding Commands
+    // april tag 18 - x-3.398, y-4.035
     public Command pathToCoralStationRight() {
         if (!Robot.getAlliance()) {
             return AutoBuilder.pathfindToPose(

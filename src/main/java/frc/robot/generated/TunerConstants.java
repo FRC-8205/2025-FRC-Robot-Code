@@ -31,7 +31,7 @@ public class TunerConstants {
     public static class Vision {
         public static final String kCameraNameFront = "BOB_OV9281";
         public static final String kCameraNameBack = "Sharon";
-        public static final String kCameraNameDriver = "Derik";
+        public static final String kCameraNameDriver = "Derik_OV9782";
 
         // TODO: change default values
         // where the cameras are
