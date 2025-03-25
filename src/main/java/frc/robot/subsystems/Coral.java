@@ -10,7 +10,6 @@ import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 
@@ -76,8 +75,8 @@ public class Coral extends SubsystemBase {
         targetPos = 0.418;
         rotatePosOffset = 0.418;
 
-        boolean locked = true;
-        boolean algaeLocked = false;
+        locked = true;
+        algaeLocked = false;
 
         // Initialize PID controller (tune gains as necessary)
         pidControllerRotate = new PIDController(0.05, 0.0, 0.0);

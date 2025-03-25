@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.Arrays;
+
 // import java.util.List;
 // import java.util.Optional;
 
@@ -31,6 +33,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 // import edu.wpi.first.math.VecBuilder;
 // import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 // import edu.wpi.first.math.numbers.N1;
 // import edu.wpi.first.math.numbers.N3;
 // import edu.wpi.first.util.sendable.Sendable;
@@ -42,12 +45,11 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 // import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-// import frc.robot.Utils.Units;
-import frc.robot.Utils.ChangeVariableCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Vision;
+import frc.robot.utils.ChangeVariableCommand;
 import frc.robot.subsystems.Coral;
 
 
@@ -95,9 +97,23 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Mode", autoChooser);
        
         // Register Commands
-        NamedCommands.registerCommand("Elevator Level 3", elevator.setElevatorCommand(16.373));
-        NamedCommands.registerCommand("Launch Coral", coral.launchCoralCommand());
-        NamedCommands.registerCommand("Stop Launch Coral", coral.stopCoralLaunchCommand());
+        // NamedCommands.registerCommand("Elevator Level 3", elevator.setElevatorCommand(16.373));
+        // NamedCommands.registerCommand("Launch Coral", coral.launchCoralCommand());
+        // NamedCommands.registerCommand("Stop Launch Coral", coral.stopCoralLaunchCommand());
+        for (int i = 0; i < 12; i++) {
+            // NamedCommands.registerCommand("Robot to Side " + (i + 1), drivetrain.pathToCoralandScore(new SequentialCommandGroup(new PrintCommand(drivetrain.m_TrantslatedPoints[i])), i));
+        }
+
+        Field2d field = new Field2d();
+
+        field.getObject("Path").setPoses(Arrays.asList(drivetrain.m_TrantslatedPoints));
+        
+        for (int i = 0; i < 12; i++) {
+            SmartDashboard.putNumber("Coral Location " + (i + 1) + " X", drivetrain.m_TrantslatedPoints[i].getX());
+            SmartDashboard.putNumber("Coral Location " + (i + 1) + " Y", drivetrain.m_TrantslatedPoints[i].getY());
+        }
+
+        SmartDashboard.putData("Field", field);
 
         configureBindings();
     }

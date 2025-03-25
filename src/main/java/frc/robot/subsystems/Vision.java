@@ -10,33 +10,18 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.PhotonUtils;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
-import frc.robot.Utils.Units;
 import frc.robot.generated.TunerConstants;
-import frc.robot.RobotContainer;
-
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.Waypoint;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.GoalEndState;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -46,23 +31,24 @@ public class Vision extends SubsystemBase {
     private final PhotonCamera aprilTagCameraFront;
     //private final PhotonCamera aprilTagCameraBack;
     private final PhotonCamera driverCam;
+    
     private final PhotonPoseEstimator photonEstimatorFront;
     private final PhotonPoseEstimator photonEstimatorBack;
 
     private Matrix<N3, N1> curStdDevs;
 
-    private final PathConstraints pathConstraints = new PathConstraints(RobotContainer.getMaxSpeed(), 1, RobotContainer.getMaxAngularRate(), 1);
-
     // Simulation
-    private PhotonCameraSim cameraSim1;
-    private PhotonCameraSim cameraSim2;
-    private PhotonCameraSim cameraSim3;
+    private PhotonCameraSim aprilTagCameraFrontSim;
+    private PhotonCameraSim aprilTagCameraBackSim;
+    private PhotonCameraSim driverCamSim;
     private VisionSystemSim visionSim;
 
     public Vision() {
         aprilTagCameraFront = new PhotonCamera(kCameraNameFront);
         // aprilTagCameraBack = new PhotonCamera(kCameraNameBack);
         driverCam = new PhotonCamera(kCameraNameDriver);
+
+        driverCam.setDriverMode(true);
 
         TunerConstants.Vision.kTagLayout.setOrigin(OriginPosition.kBlueAllianceWallRightSide);
 
@@ -90,31 +76,31 @@ public class Vision extends SubsystemBase {
                         
 
         // ----- Simulation
-        if (Robot.isSimulation()) {
-            // Create the vision system simulation which handles cameras and targets on the field.
-            visionSim = new VisionSystemSim("main");
-            // Add all the AprilTags inside the tag layout as visible targets to this simulated field.
-            visionSim.addAprilTags(kTagLayout);
-            // Create simulated camera properties. These can be set to mimic your actual camera.
-            var cameraProp = new SimCameraProperties();
-            cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
-            cameraProp.setCalibError(0.35, 0.10);
-            cameraProp.setFPS(15);
-            cameraProp.setAvgLatencyMs(50);
-            cameraProp.setLatencyStdDevMs(15);
-            // Create PhotonCameraSim instances which will update the linked PhotonCamera's values with visible targets.
-            cameraSim1 = new PhotonCameraSim(aprilTagCameraFront, cameraProp);
-            // cameraSim2 = new PhotonCameraSim(aprilTagCameraBack, cameraProp);
-            cameraSim3 = new PhotonCameraSim(driverCam, cameraProp);
-            // Add the simulated cameras to view the targets on this simulated field.
-            visionSim.addCamera(cameraSim1, kRobotToCam1);
-            visionSim.addCamera(cameraSim2, kRobotToCam2);
-            visionSim.addCamera(cameraSim3, kRobotToCam3);
+        // if (Robot.isSimulation()) {
+        //     // Create the vision system simulation which handles cameras and targets on the field.
+        //     visionSim = new VisionSystemSim("main");
+        //     // Add all the AprilTags inside the tag layout as visible targets to this simulated field.
+        //     visionSim.addAprilTags(kTagLayout);
+        //     // Create simulated camera properties. These can be set to mimic your actual camera.
+        //     var cameraProp = new SimCameraProperties();
+        //     cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
+        //     cameraProp.setCalibError(0.35, 0.10);
+        //     cameraProp.setFPS(15);
+        //     cameraProp.setAvgLatencyMs(50);
+        //     cameraProp.setLatencyStdDevMs(15);
+        //     // Create PhotonCameraSim instances which will update the linked PhotonCamera's values with visible targets.
+        //     aprilTagCameraFrontSim = new PhotonCameraSim(aprilTagCameraFront, cameraProp);
+        //     // cameraSim2 = new PhotonCameraSim(aprilTagCameraBack, cameraProp);
+        //     driverCamSim = new PhotonCameraSim(driverCam, cameraProp);
+        //     // Add the simulated cameras to view the targets on this simulated field.
+        //     visionSim.addCamera(aprilTagCameraFrontSim, kRobotToCam1);
+        //     visionSim.addCamera(aprilTagCameraBackSim, kRobotToCam2);
+        //     visionSim.addCamera(driverCamSim, kRobotToCam3);
 
-            cameraSim1.enableDrawWireframe(true);
-            cameraSim2.enableDrawWireframe(true);
-            cameraSim3.enableDrawWireframe(true);
-        }
+        //     aprilTagCameraFrontSim.enableDrawWireframe(true);
+        //     aprilTagCameraBackSim.enableDrawWireframe(true);
+        //     driverCamSim.enableDrawWireframe(true);
+        // }
     }
 
     /**
