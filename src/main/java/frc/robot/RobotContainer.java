@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 // import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -97,23 +98,10 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Mode", autoChooser);
        
         // Register Commands
-        // NamedCommands.registerCommand("Elevator Level 3", elevator.setElevatorCommand(16.373));
-        // NamedCommands.registerCommand("Launch Coral", coral.launchCoralCommand());
-        // NamedCommands.registerCommand("Stop Launch Coral", coral.stopCoralLaunchCommand());
-        for (int i = 0; i < 12; i++) {
-            // NamedCommands.registerCommand("Robot to Side " + (i + 1), drivetrain.pathToCoralandScore(new SequentialCommandGroup(new PrintCommand(drivetrain.m_TrantslatedPoints[i])), i));
+        SequentialCommandGroup elevatorAndLaunch = new SequentialCommandGroup(elevator.setElevatorCommand(24.1385), coral.launchCoralCommand());
+        for (int i = 1; i < 13; i++) {
+            NamedCommands.registerCommand("Robot to Coral Side " + i, drivetrain.pathToCoralandScore(elevatorAndLaunch, i));
         }
-
-        Field2d field = new Field2d();
-
-        field.getObject("Path").setPoses(Arrays.asList(drivetrain.m_TrantslatedPoints));
-        
-        for (int i = 0; i < 12; i++) {
-            SmartDashboard.putNumber("Coral Location " + (i + 1) + " X", drivetrain.m_TrantslatedPoints[i].getX());
-            SmartDashboard.putNumber("Coral Location " + (i + 1) + " Y", drivetrain.m_TrantslatedPoints[i].getY());
-        }
-
-        SmartDashboard.putData("Field", field);
 
         configureBindings();
     }
@@ -168,7 +156,7 @@ public class RobotContainer {
         // m_driverController.povUp().onTrue(elevator.setElevatorCommand(6.142879486083984));
         // m_driverController.povRight().onTrue(elevator.setElevatorCommand(16.071365356445312));
         // m_driverController.povDown().onTrue(elevator.setElevatorCommand(24.1385));
-        // m_driverController.povLeft().onTrue(elevator.setElevatorCommand(24.754));   
+        // m_driverController.povLeft().onTrue(elevator.setElevatorCommand(24.754)); // incorrect height
 
         // // Moving elevator to bottom
         // m_driverController.leftTrigger().onTrue(elevator.setElevatorCommand(0));
