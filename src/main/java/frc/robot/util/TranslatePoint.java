@@ -32,7 +32,7 @@ public class TranslatePoint {
 
         // first positions for left branch of the side of the reef facing the driver station
         double newX = reefEdgeLength - (double) (robotDiameter / 2);
-        double newY = reefEdgeWidth + (reefApothem * root3) - (branchDistance / 2);
+        double newY = reefEdgeWidth + (reefApothem * root3) + (branchDistance / 2);
         
         // x and y coordinates shifted with the center of the hexagon at (0, 0)
         double shiftedX, shiftedY;
@@ -44,12 +44,12 @@ public class TranslatePoint {
 
             // not changing sides, just doing the right branch instead
             if (i % 2 == 0) {
-                newX += branchDistance * Math.sin(Units.degreesToRadians(angle));
-                newY += branchDistance * Math.cos(Units.degreesToRadians(angle));
-            } else {
-                // move back over to the left branch
                 newX -= branchDistance * Math.sin(Units.degreesToRadians(angle));
                 newY -= branchDistance * Math.cos(Units.degreesToRadians(angle));
+            } else {
+                // move back over to the left branch
+                newX += branchDistance * Math.sin(Units.degreesToRadians(angle));
+                newY += branchDistance * Math.cos(Units.degreesToRadians(angle));
 
                 // shift points down so that the center of the reef is at the origin
                 shiftedX = newX - reefApothem - reefEdgeLength;
