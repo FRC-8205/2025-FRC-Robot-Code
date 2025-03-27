@@ -21,6 +21,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
+import frc.robot.util.Elastic;
+
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
@@ -47,6 +49,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
+    if (DriverStation.isTeleop()) {
+      Elastic.selectTab("Teleop");
+    } else {
+      Elastic.selectTab("Autonomous");
+    }
+
     CommandScheduler.getInstance().run();
 
     // Correct pose estimate with vision measurements
@@ -65,6 +73,8 @@ public class Robot extends TimedRobot {
     } else {
         SmartDashboard.putNumber("Match Time", 0);
     }
+
+    
 
     SmartDashboard.putNumber("Battery Voltage", RobotController.getBatteryVoltage());
 

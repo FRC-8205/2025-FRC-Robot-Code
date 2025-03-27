@@ -49,7 +49,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Vision;
-import frc.robot.utils.ChangeVariableCommand;
+import frc.robot.util.ChangeVariableCommand;
 import frc.robot.subsystems.Coral;
 
 
