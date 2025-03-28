@@ -72,8 +72,8 @@ public class Coral extends SubsystemBase {
         coralMotor2.configure(followerConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters);
 
         // Set initial target position (in rotations)
-        targetPos = 0.418;
-        rotatePosOffset = 0.418;
+        targetPos = -6.738100528717041;
+        rotatePosOffset = -6.738100528717041;
 
         locked = true;
         algaeLocked = false;
@@ -96,6 +96,10 @@ public class Coral extends SubsystemBase {
     private void rotateDownManual() {
         locked = false;
         rotateMotor.set(.3);
+    }
+
+    public InstantCommand rotateManualCommand() {
+        return new InstantCommand(() -> rotateUpManual());
     }
 
     private void loseCoral() {

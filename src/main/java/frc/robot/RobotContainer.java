@@ -92,13 +92,6 @@ public class RobotContainer {
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
-
-    // private final Thread photonThread = new Thread(
-    //     new PhotonRunnable(
-    //         TunerConstants.Vision.aprilTagCameraNames,
-    //         TunerConstants.Vision.aprilTagCameraTransforms,
-    //         drivetrain::addVisionMeasurement,
-    //         () -> drivetrain.getState().Pose));
     
 
     public RobotContainer() {
@@ -183,8 +176,8 @@ public class RobotContainer {
         m_driverController.leftTrigger().onTrue(elevator.setElevatorCommand(0));
 
         // // Launching coral
-        // m_driverController.b().onTrue(coral.launchCoralCommand());
-        // m_driverController.b().onFalse(coral.stopCoralLaunchCommand());
+         m_driverController.x().onTrue(coral.launchCoralCommand());
+         m_driverController.x().onFalse(coral.stopCoralLaunchCommand());
 
         // // Moving coral back
         // m_driverController.a().onTrue(coral.loseCoralCommand());
@@ -193,8 +186,8 @@ public class RobotContainer {
         // // Launching algae
         // m_driverController.x().onTrue(coral.launchAlgaeCommand());
         // m_driverController.x().onFalse(coral.stopAlgaeIndexCommand());
-        m_driverController.x().onTrue(drivetrain.pathToCoralandScore(1));
-        m_driverController.y().onTrue(AutoBuilder.pathfindToPose(new Pose2d(6.0, 6.0, new Rotation2d(0)), TunerConstants.Auto.PathfindingConstraints));
+        //m_driverController.x().onTrue(drivetrain.pathToCoralandScore(9));
+        //m_driverController.y().onTrue(AutoBuilder.pathfindToPose(new Pose2d(6.0, 6.0, new Rotation2d(0)), TunerConstants.Auto.PathfindingConstraints));
         // // Intake algae
         // m_driverController.y().onTrue(coral.intakeAlgaeCommand());
         // m_driverController.y().onFalse(coral.stopAlgaeIndexCommand());
@@ -205,9 +198,11 @@ public class RobotContainer {
         m_driverController.leftBumper().onFalse(elevator.stopElevatorCommand());
 
         // // Setting arm to rotation for levels 1, 2, and 3
-        m_driverController.b().onTrue(coral.setLauncherRotationCommand(-5.499996185302734));
+        // set default arm position
+        m_driverController.b().onTrue(coral.setLauncherRotationCommand(-7.428585529327393));
         m_driverController.rightBumper().onTrue(elevator.moveElevatorDownCommand());
         m_driverController.rightBumper().onFalse(elevator.stopElevatorCommand());
+        m_driverController.y().onTrue(coral.rotateManualCommand());
 
         // Making swerve drive slower
         ChangeVariableCommand<Double> changeCommand = new ChangeVariableCommand<Double>((Double) swerveSpeed, new Double[] {1.0, 0.5});
