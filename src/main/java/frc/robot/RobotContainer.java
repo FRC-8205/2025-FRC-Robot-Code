@@ -93,12 +93,12 @@ public class RobotContainer {
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
 
-    private final Thread photonThread = new Thread(
-        new PhotonRunnable(
-            TunerConstants.Vision.aprilTagCameraNames,
-            TunerConstants.Vision.aprilTagCameraTransforms,
-            drivetrain::addVisionMeasurement,
-            () -> drivetrain.getState().Pose));
+    // private final Thread photonThread = new Thread(
+    //     new PhotonRunnable(
+    //         TunerConstants.Vision.aprilTagCameraNames,
+    //         TunerConstants.Vision.aprilTagCameraTransforms,
+    //         drivetrain::addVisionMeasurement,
+    //         () -> drivetrain.getState().Pose));
     
 
     public RobotContainer() {
@@ -129,10 +129,10 @@ public class RobotContainer {
             )
         );
 
-        // Start PhotonVision thread
-        photonThread.setName("PhotonVision");
-        photonThread.setDaemon(true);
-        photonThread.start();
+        // // Start PhotonVision thread
+        // photonThread.setName("PhotonVision");
+        // photonThread.setDaemon(true);
+        // photonThread.start();
 
         // m_driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
         // m_driverController.b().whileTrue(drivetrain.applyRequest(() ->

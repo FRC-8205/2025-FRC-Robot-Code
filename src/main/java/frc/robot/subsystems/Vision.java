@@ -62,14 +62,14 @@ public class Vision extends SubsystemBase {
                 new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam2);
         photonEstimatorBack.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
-        photonEstimatorFront.setLastPose(
-                Robot.getAlliance()
-                        ? TunerConstants.Vision.startingPoseRed
-                        : TunerConstants.Vision.startingPoseBlue);
-        photonEstimatorBack.setLastPose(
-                Robot.getAlliance()
-                        ? TunerConstants.Vision.startingPoseRed
-                        : TunerConstants.Vision.startingPoseBlue);
+        // photonEstimatorFront.setLastPose(
+        //         Robot.getAlliance()
+        //                 ? TunerConstants.Vision.startingPoseRed
+        //                 : TunerConstants.Vision.startingPoseBlue);
+        // photonEstimatorBack.setLastPose(
+        //         Robot.getAlliance()
+        //                 ? TunerConstants.Vision.startingPoseRed
+        //                 : TunerConstants.Vision.startingPoseBlue);
         
                         
 

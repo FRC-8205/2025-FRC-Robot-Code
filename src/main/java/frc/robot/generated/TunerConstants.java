@@ -51,8 +51,8 @@ public class TunerConstants {
         public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
         // error correction values
-        public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(4, 4, 20);
-        public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(1, 1, 999);
+        public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(.5, .5, 1);
+        public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(2, 2, 8);
 
         public static final Pose2d startingPoseBlue = new Pose2d(1.35, 5.55, new Rotation2d(0));
         public static final Pose2d startingPoseRed =

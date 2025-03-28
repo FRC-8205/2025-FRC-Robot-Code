@@ -344,5 +344,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return PathfindingCommand;
     }
 
-    
+    // @Override
+    // public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
+    //     super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
+    // }
+
+    // @Override
+    // public void addVisionMeasurement(
+    //     Pose2d visionRobotPoseMeters,
+    //     double timestampSeconds,
+    //     Matrix<N3, N1> visionMeasurmentStdDevs) {
+    //         super.addVisionMeasurement(
+    //             visionRobotPoseMeters, 
+    //             Utils.fpgaToCurrentTime(timestampSeconds), 
+    //             visionMeasurmentStdDevs);
+    //     }
 }
