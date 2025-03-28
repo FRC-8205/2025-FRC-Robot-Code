@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.Arrays;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
@@ -326,7 +328,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    public Command pathToCoralandScore(SequentialCommandGroup endCommands, int reefArm) {
+    public Command pathToCoralandScore (int reefArm) {
         Command PathfindingCommand;
         if (!Robot.getAlliance()) {
             // if blue
@@ -339,10 +341,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 TranslatePoint.flipPose(m_TrantslatedPoints[reefArm - 1]),
                 TunerConstants.Auto.PathfindingConstraints);
         }
-        return new SequentialCommandGroup(
-            PathfindingCommand,
-            endCommands
-        );
+        return PathfindingCommand;
     }
 
     

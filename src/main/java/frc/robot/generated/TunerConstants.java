@@ -27,17 +27,25 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 
 public class TunerConstants {
+    public static final Distance fieldLength = Meters.of(17.548);
+    public static final Distance fieldWidth = Meters.of(8.052);
+    
+
+
     // Constants for the camera setup
     public static class Vision {
         public static final String kCameraNameFront = "BOB_OV9281";
         public static final String kCameraNameBack = "Sharon";
         public static final String kCameraNameDriver = "Derik_OV9782";
 
-        // TODO: change default values
-        // where the cameras are
-        public static final Transform3d kRobotToCam1 = new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
-        public static final Transform3d kRobotToCam2 = new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
-        public static final Transform3d kRobotToCam3 = new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
+         // where the cameras are
+         public static final Transform3d kRobotToCam1 = new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
+         public static final Transform3d kRobotToCam2 = new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
+         public static final Transform3d kRobotToCam3 = new Transform3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
+
+        public static final String[] aprilTagCameraNames = new String[] {kCameraNameFront, kCameraNameBack};
+        public static final Transform3d[] aprilTagCameraTransforms = new Transform3d[] {kRobotToCam1, kRobotToCam2};
+
 
         // apriltag layout
         public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
@@ -49,6 +57,9 @@ public class TunerConstants {
         public static final Pose2d startingPoseBlue = new Pose2d(1.35, 5.55, new Rotation2d(0));
         public static final Pose2d startingPoseRed =
                 new Pose2d(15.19, 5.55, new Rotation2d(Math.PI));
+
+        public static final double apriltagAmbiguityThreshold = .02;
+        public static final Distance singleTagDistanceThreshold = Meters.of(4.5);
 
     }
     // Both sets of gains need to be tuned to your individual robot.

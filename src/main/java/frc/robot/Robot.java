@@ -64,6 +64,8 @@ public class Robot extends TimedRobot {
         m_robotContainer.drivetrain.addVisionMeasurement(
             est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs
         );
+        SmartDashboard.putNumber("Vision x", est.estimatedPose.toPose2d().getX());
+        SmartDashboard.putNumber("Vision y", est.estimatedPose.toPose2d().getY());
     });
 
     matchTime = getMatchTime();  

@@ -31,7 +31,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 // import edu.wpi.first.math.Matrix;
 // import edu.wpi.first.math.VecBuilder;
-// import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 // import edu.wpi.first.math.numbers.N1;
@@ -93,15 +93,26 @@ public class RobotContainer {
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
 
+    private final Thread photonThread = new Thread(
+        new PhotonRunnable(
+            TunerConstants.Vision.aprilTagCameraNames,
+            TunerConstants.Vision.aprilTagCameraTransforms,
+            drivetrain::addVisionMeasurement,
+            () -> drivetrain.getState().Pose));
+    
+
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Mode", autoChooser);
        
         // Register Commands
-        SequentialCommandGroup elevatorAndLaunch = new SequentialCommandGroup(elevator.setElevatorCommand(24.1385), coral.launchCoralCommand());
+        // InstantCommand elevatorLevel3 = elevator.setElevatorCommand(24.1385);
+        // InstantCommand launchCoral = coral.launchCoralCommand();
         for (int i = 1; i < 13; i++) {
-            NamedCommands.registerCommand("Robot to Coral Side " + i, drivetrain.pathToCoralandScore(elevatorAndLaunch, i));
+            NamedCommands.registerCommand("Robot to Coral Side " + i, drivetrain.pathToCoralandScore(i));
         }
+
+        NamedCommands.registerCommand("Elevator Up", elevator.setElevatorCommand(6.32766469574765));
 
         configureBindings();
     }
@@ -117,6 +128,11 @@ public class RobotContainer {
                     .withRotationalRate(-m_driverController.getRightX() * MaxAngularRate * swerveSpeed) // Drive counterclockwise with negative X (left)
             )
         );
+
+        // Start PhotonVision thread
+        photonThread.setName("PhotonVision");
+        photonThread.setDaemon(true);
+        photonThread.start();
 
         // m_driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
         // m_driverController.b().whileTrue(drivetrain.applyRequest(() ->
@@ -146,20 +162,25 @@ public class RobotContainer {
         /* DRIVER BUTTONS */
         /*
          * Needed Buttons:
-         * Moving to elevator to all 4 levels and bottom (5 buttons) done
+         * Moving to elevator to all 4z levels and bottom (5 buttons) done
          * Launching and intake of algae (2 buttons) done
          * Intake and outtake of coral (2 buttons) done
          * Rotating launcher to vertical and 35 degrees (2 buttons) done
          * Button to make swerve drive slower (1 button)
+         * level 1 - 17.28863246905321
+         * level 2 - 6.32766469574765
+         * level 3 - 14.5789935357442
+         * level 4 - 
+         * 
          */
         // Moving elevator to levels 1, 2, 3, and 4
-        // m_driverController.povUp().onTrue(elevator.setElevatorCommand(6.142879486083984));
-        // m_driverController.povRight().onTrue(elevator.setElevatorCommand(16.071365356445312));
-        // m_driverController.povDown().onTrue(elevator.setElevatorCommand(24.1385));
-        // m_driverController.povLeft().onTrue(elevator.setElevatorCommand(24.754)); // incorrect height
+        m_driverController.povUp().onTrue(elevator.setElevatorCommand(6.142879486083984));
+        m_driverController.povRight().onTrue(elevator.setElevatorCommand(16.071365356445312));
+        m_driverController.povDown().onTrue(elevator.setElevatorCommand(24.1385));
+        m_driverController.povLeft().onTrue(elevator.setElevatorCommand(24.754)); // incorrect height
 
         // // Moving elevator to bottom
-        // m_driverController.leftTrigger().onTrue(elevator.setElevatorCommand(0));
+        m_driverController.leftTrigger().onTrue(elevator.setElevatorCommand(0));
 
         // // Launching coral
         // m_driverController.b().onTrue(coral.launchCoralCommand());
@@ -172,16 +193,21 @@ public class RobotContainer {
         // // Launching algae
         // m_driverController.x().onTrue(coral.launchAlgaeCommand());
         // m_driverController.x().onFalse(coral.stopAlgaeIndexCommand());
-
+        m_driverController.x().onTrue(drivetrain.pathToCoralandScore(1));
+        m_driverController.y().onTrue(AutoBuilder.pathfindToPose(new Pose2d(6.0, 6.0, new Rotation2d(0)), TunerConstants.Auto.PathfindingConstraints));
         // // Intake algae
         // m_driverController.y().onTrue(coral.intakeAlgaeCommand());
         // m_driverController.y().onFalse(coral.stopAlgaeIndexCommand());
 
         // // Setting arm to vertical
         // m_driverController.leftBumper().onTrue(coral.setLauncherRotationCommand(-0.3));
+        m_driverController.leftBumper().onTrue(elevator.moveElevatorUpCommand());
+        m_driverController.leftBumper().onFalse(elevator.stopElevatorCommand());
 
         // // Setting arm to rotation for levels 1, 2, and 3
-        // m_driverController.rightBumper().onTrue(coral.setLauncherRotationCommand(-5.499996185302734));
+        m_driverController.b().onTrue(coral.setLauncherRotationCommand(-5.499996185302734));
+        m_driverController.rightBumper().onTrue(elevator.moveElevatorDownCommand());
+        m_driverController.rightBumper().onFalse(elevator.stopElevatorCommand());
 
         // Making swerve drive slower
         ChangeVariableCommand<Double> changeCommand = new ChangeVariableCommand<Double>((Double) swerveSpeed, new Double[] {1.0, 0.5});

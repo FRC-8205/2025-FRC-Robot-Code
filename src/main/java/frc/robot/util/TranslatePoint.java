@@ -80,10 +80,10 @@ public class TranslatePoint {
             poses[i] = new Pose2d(midpointsX[i], midpointsY[i], rotations[i]);
         }
 
-        // for (int i = 0; i < 12; i++) {
-        //     SmartDashboard.putNumber("Pose " + i + " X", poses[i].getX());
-        //     SmartDashboard.putNumber("Pose " + i + " Y", poses[i].getY());
-        // }
+        for (int i = 0; i < 12; i++) {
+            SmartDashboard.putNumber("Pose " + i + " X", poses[i].getX());
+            SmartDashboard.putNumber("Pose " + i + " Y", poses[i].getY());
+        }
         
         return poses;
     }
