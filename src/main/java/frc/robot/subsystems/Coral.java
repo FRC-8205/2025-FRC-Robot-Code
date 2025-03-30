@@ -5,12 +5,12 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.ColorSensorV3;
+// import com.revrobotics.ColorSensorV3;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.I2C;
+// import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import frc.robot.generated.TunerConstants;
@@ -24,14 +24,14 @@ public class Coral extends SubsystemBase {
     private RelativeEncoder rotateEncoder;
     private AbsoluteEncoder rotateAbsoluteEncoder;
     private RelativeEncoder algaeIndexEncoder;
-    private RelativeEncoder coralEncoder;
+    // private RelativeEncoder coralEncoder;
 
     private PIDController pidControllerRotate;
     private PIDController pidAlgaeIntake;
 
-    private ColorSensorV3 colorSensor;
-    private boolean coralLoaded = false;
-    private int moveCount = 0;
+    // private ColorSensorV3 colorSensor;
+    // private boolean coralLoaded = false;
+    // private int moveCount = 0;
 
     //private final ArmFeedforward armFeedforward;
 
@@ -39,10 +39,10 @@ public class Coral extends SubsystemBase {
     private double targetAlgae;
     private boolean locked;
     private boolean algaeLocked;
-    private final double rotatePosOffset;
+    // private final double rotatePosOffset;
 
-    private double lastEncoderPosition = 0.0;
-    private int rotationCount = 0;
+    // private double lastEncoderPosition = 0.0;
+    // private int rotationCount = 0;
 
     public Coral() {
         // level 1 elevator - 6.142879486083984
@@ -59,7 +59,7 @@ public class Coral extends SubsystemBase {
         rotateAbsoluteEncoder = rotateMotor.getAbsoluteEncoder();
         rotateEncoder.setPosition(rotateAbsoluteEncoder.getPosition());
         algaeIndexEncoder = algaeIndexMotor.getEncoder();
-        coralEncoder = coralMotor1.getEncoder();
+        // coralEncoder = coralMotor1.getEncoder();
 
         // set follower for coral launcher
         SparkMaxConfig followerConfig = new SparkMaxConfig();
@@ -72,8 +72,8 @@ public class Coral extends SubsystemBase {
         coralMotor2.configure(followerConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters);
 
         // Set initial target position (in rotations)
-        targetPos = -6.738100528717041;
-        rotatePosOffset = -6.738100528717041;
+        targetPos = -1.5238096714019775;
+        // rotatePosOffset = -1.5238096714019775;
 
         locked = true;
         algaeLocked = false;
@@ -88,23 +88,27 @@ public class Coral extends SubsystemBase {
 
         //armFeedforward = new ArmFeedforward(.1, 1.0, .0);
         // initialize color sensor
-        final I2C.Port i2cPort = I2C.Port.kOnboard;
-        colorSensor = new ColorSensorV3(i2cPort);
-        colorSensor.configureColorSensor(ColorSensorV3.ColorSensorResolution.kColorSensorRes20bit, ColorSensorV3.ColorSensorMeasurementRate.kColorRate25ms, ColorSensorV3.GainFactor.kGain3x);
+        // final I2C.Port i2cPort = I2C.Port.kOnboard;
+        // colorSensor = new ColorSensorV3(i2cPort);
+        // colorSensor.configureColorSensor(ColorSensorV3.ColorSensorResolution.kColorSensorRes20bit, ColorSensorV3.ColorSensorMeasurementRate.kColorRate25ms, ColorSensorV3.GainFactor.kGain3x);
     }
 
     private void rotateDownManual() {
         locked = false;
-        rotateMotor.set(.3);
+        rotateMotor.set(.2);
     }
 
-    public InstantCommand rotateManualCommand() {
+    public InstantCommand rotateUpManualCommand() {
+        return new InstantCommand(() -> rotateDownManual());
+    }
+
+    public InstantCommand rotateDownManualCommand() {
         return new InstantCommand(() -> rotateUpManual());
     }
 
     private void loseCoral() {
         locked = false;
-        coralMotor1.set(-0.1);
+        coralMotor1.set(-0.25);
     }
 
     public InstantCommand loseCoralCommand() {
@@ -112,7 +116,7 @@ public class Coral extends SubsystemBase {
     }
     private void rotateUpManual() {
         locked = false;
-        rotateMotor.set(-.3);
+        rotateMotor.set(-.2);
     }
 
     private void stopArm() {
@@ -120,7 +124,7 @@ public class Coral extends SubsystemBase {
     }
 
     private void launchCoral() {
-        coralMotor1.set(0.15);
+        coralMotor1.set(0.55);
     }
 
     private void intakeAlgae() {
@@ -221,9 +225,9 @@ public class Coral extends SubsystemBase {
         return new InstantCommand(() -> stopArm());
     }
 
-    private void configureDashboard(double currentPos, ColorSensorV3.RawColor color) {
+    private void configureDashboard(double currentPos) {
         SmartDashboard.putNumber("Arm Rotate Encoder Position", currentPos);
-        SmartDashboard.putNumber("Color Sensor Color", (color.red + color.blue + color.green));
+        // SmartDashboard.putNumber("Color Sensor Color", (color.red + color.blue + color.green));
     }
 
     
@@ -239,7 +243,7 @@ public class Coral extends SubsystemBase {
         if (algaeLocked) {}
 
         // color sensor
-        ColorSensorV3.RawColor currentColor = colorSensor.getRawColor();
-        configureDashboard(currentPosition, currentColor);
+        // ColorSensorV3.RawColor currentColor = colorSensor.getRawColor();
+        configureDashboard(currentPosition);
     }
 }

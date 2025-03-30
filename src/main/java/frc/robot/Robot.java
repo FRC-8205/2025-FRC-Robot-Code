@@ -37,7 +37,20 @@ public class Robot extends TimedRobot {
   public Robot() {
     m_robotContainer = new RobotContainer();
 
-    m_robotContainer.drivetrain.resetPose(new Pose2d(5.6, 5.8, new Rotation2d(-120)));
+    // try {
+    //   Thread.sleep(5000);
+    //   var visionEst = m_robotContainer.vision.getEstimatedGlobalPose();
+    //   visionEst.ifPresent(est -> {
+    //       var estStdDevs = m_robotContainer.vision.getEstimationStdDevs();
+    //       m_robotContainer.drivetrain.addVisionMeasurement(
+    //           est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs
+    //       );
+    //       m_robotContainer.drivetrain.resetPose(est.estimatedPose.toPose2d());
+    //   });
+    //   SmartDashboard.putBoolean("Correct Vision Pose", true);
+    // } catch (InterruptedException e) {
+    //   SmartDashboard.putBoolean("Correct Vision Pose", false);
+    // }
 
     PDH = new PowerDistribution(1, ModuleType.kRev);
 
@@ -113,6 +126,15 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    var visionEst = m_robotContainer.vision.getEstimatedGlobalPose();
+      visionEst.ifPresent(est -> {
+          var estStdDevs = m_robotContainer.vision.getEstimationStdDevs();
+          m_robotContainer.drivetrain.addVisionMeasurement(
+              est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs
+          );
+          m_robotContainer.drivetrain.resetPose(est.estimatedPose.toPose2d());
+      });
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
@@ -131,7 +153,16 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    resetPose(); // maybe try deleting this line of code to see if that fixes swerve.
+    // resetPose(); // maybe try deleting this line of code to see if that fixes swerve.
+
+    var visionEst = m_robotContainer.vision.getEstimatedGlobalPose();
+      visionEst.ifPresent(est -> {
+          var estStdDevs = m_robotContainer.vision.getEstimationStdDevs();
+          m_robotContainer.drivetrain.addVisionMeasurement(
+              est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs
+          );
+          m_robotContainer.drivetrain.resetPose(est.estimatedPose.toPose2d());
+      });
   }
 
   @Override

@@ -1,0 +1,79 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center to coral 7 (part 1)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Rotate Level 4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Elevator Level 4"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Backwards Coral"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.2
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Coral"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center to coral 7 (part 2)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Launch Coral"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Coral"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Level 4 Autos",
+  "choreoAuto": false
+}

@@ -1,0 +1,19 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Move from Start Center"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Move from Start Autos",
+  "choreoAuto": false
+}
